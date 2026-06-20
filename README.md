@@ -69,7 +69,7 @@ render.yaml
 
 ```env
 NODE_ENV="production"
-DATABASE_URL="postgresql://prisma.[PROJECT-REF]:[PASSWORD]@[DB-REGION].pooler.supabase.com:5432/postgres"
+DATABASE_URL=postgresql://postgres.PROJECT_REF:PASSWORD@DB_REGION.pooler.supabase.com:5432/postgres
 JWT_SECRET="strong-secret"
 JWT_EXPIRES_IN="7d"
 PORT=10000
@@ -120,7 +120,7 @@ npm --workspace apps/web run build
 
 1. Crie um projeto no Supabase Free.
 2. Pegue a connection string Postgres do pooler.
-3. Configure `DATABASE_URL`.
+3. Configure `DATABASE_URL` com a URL real completa, sem colchetes, sem placeholders e sem aspas extras do painel.
 4. Rode as migrations.
 5. Rode o seed apenas se quiser uma conta demo.
 
