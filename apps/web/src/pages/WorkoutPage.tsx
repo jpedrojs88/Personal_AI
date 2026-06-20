@@ -1,13 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FormEvent, useEffect, useState } from "react";
+import { ExerciseGuideModal } from "../components/ExerciseGuideModal";
 import { apiRequest } from "../lib/api";
 import { useAuth } from "../lib/auth";
-import type { TodayWorkoutResponse } from "../types";
+import type { TodayWorkoutResponse, WorkoutExercise } from "../types";
 
 export function WorkoutPage() {
   const { token } = useAuth();
   const queryClient = useQueryClient();
   const [loads, setLoads] = useState<Record<string, { loadKg: string; repsCompleted: string }>>({});
+  const [selectedExercise, setSelectedExercise] = useState<WorkoutExercise | null>(null);
   const onboardingPendingQuery = useQuery<boolean>({
     queryKey: ["onboarding-pending", token],
     enabled: false,
@@ -173,6 +175,13 @@ export function WorkoutPage() {
                   <span className="pill">{exercise.muscleGroup}</span>
                 </div>
                 {exercise.notes ? <small>{exercise.notes}</small> : null}
+                <button
+                  className="ghost-button exercise-guide-trigger"
+                  onClick={() => setSelectedExercise(exercise)}
+                  type="button"
+                >
+                  Ver execucao
+                </button>
 
                 <form className="exercise-form" onSubmit={(event) => handleSubmit(event, exercise.id)}>
                   <input
@@ -246,6 +255,13 @@ export function WorkoutPage() {
           </div>
         </article>
       </div>
+
+      {selectedExercise ? (
+        <ExerciseGuideModal
+          exercise={selectedExercise}
+          onClose={() => setSelectedExercise(null)}
+        />
+      ) : null}
     </section>
   );
 }
