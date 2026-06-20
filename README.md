@@ -177,7 +177,17 @@ Este projeto usa Prisma com conexao direta ao Postgres, nao `supabase-js` nem Da
 - Start de producao com `npm --workspace apps/api run start:prod`
 - Health check em `GET /health`
 - CORS baseado em `FRONTEND_URL` e `CORS_ALLOWED_ORIGINS`
-- Migration automatica de release via `preDeployCommand` no Render
+- Compatibilidade com Render Free sem `preDeployCommand`
+
+### Migration no Render Free
+
+Como o plano Free do Render nao aceita `preDeployCommand`, aplique a migration manualmente antes do primeiro deploy em producao:
+
+```bash
+npm --workspace apps/api run prisma:migrate:deploy
+```
+
+Depois disso, o serviço no Render pode subir normalmente com o `startCommand`.
 
 ## Credenciais demo
 
