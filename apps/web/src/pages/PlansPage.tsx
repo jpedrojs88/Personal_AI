@@ -279,7 +279,7 @@ export function PlansPage() {
 
           <div className="premium-inline-note">
             <p>
-              Descontos aplicados: 3 meses com 5%, 6 meses com 10% e 12 meses com 15%.
+              Planos semestrais e anuais recebem desconto progressivo e ficam mais vantajosos no valor mensal.
             </p>
             <span className="pill">
               {selectedOffer?.discountPercent

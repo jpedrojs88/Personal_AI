@@ -259,7 +259,7 @@ Depois disso, o serviço no Render pode subir normalmente com o `startCommand`.
 - No painel do Stripe, aponte o webhook para `https://seu-backend.onrender.com/payments/stripe/webhook`.
 - O plano Free limita mensagens mensais com IA, historico avancado e adaptacoes ilimitadas.
 - O plano Premium libera historico completo, comparativos, mais uso do chat e expansoes futuras.
-- O Premium oferece ciclos de 1, 3, 6 e 12 meses, com descontos de 5%, 10% e 15% para 3, 6 e 12 meses.
+- O Premium oferece ciclos de 1, 3, 6 e 12 meses, com valores arredondados e desconto progressivo para os planos mais longos.
 - Para testar sem gateway real, entre em `/app/plans` e use `Ativar Premium para teste`.
 
 ## Fontes oficiais consultadas

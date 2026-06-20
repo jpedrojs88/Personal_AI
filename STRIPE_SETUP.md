@@ -29,8 +29,8 @@ Crie 4 prices recorrentes em `BRL` para o mesmo produto.
 - Tipo: `Recurring`
 - Intervalo: `Month`
 - Interval count: `3`
-- Valor: `R$ 28,22`
-- `unit_amount`: `2822`
+- Valor: `R$ 27,90`
+- `unit_amount`: `2790`
 - Variavel: `STRIPE_PRICE_ID_PREMIUM_3M`
 
 ### Price 3
@@ -39,8 +39,8 @@ Crie 4 prices recorrentes em `BRL` para o mesmo produto.
 - Tipo: `Recurring`
 - Intervalo: `Month`
 - Interval count: `6`
-- Valor: `R$ 53,46`
-- `unit_amount`: `5346`
+- Valor: `R$ 53,90`
+- `unit_amount`: `5390`
 - Variavel: `STRIPE_PRICE_ID_PREMIUM_6M`
 
 ### Price 4
@@ -49,8 +49,8 @@ Crie 4 prices recorrentes em `BRL` para o mesmo produto.
 - Tipo: `Recurring`
 - Intervalo: `Month`
 - Interval count: `12`
-- Valor: `R$ 100,98`
-- `unit_amount`: `10098`
+- Valor: `R$ 99,90`
+- `unit_amount`: `9990`
 - Variavel: `STRIPE_PRICE_ID_PREMIUM_12M`
 
 ## Variaveis no Render

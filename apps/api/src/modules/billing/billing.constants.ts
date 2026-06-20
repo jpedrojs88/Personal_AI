@@ -5,11 +5,11 @@ export const PREMIUM_MONTHLY_PRICE_LABEL = "R$ 9,90 / mes";
 
 const premiumOfferDurations = [1, 3, 6, 12] as const;
 
-const premiumOfferDiscounts: Record<(typeof premiumOfferDurations)[number], number> = {
-  1: 0,
-  3: 5,
-  6: 10,
-  12: 15,
+const premiumOfferTotals: Record<(typeof premiumOfferDurations)[number], number> = {
+  1: 9.9,
+  3: 27.9,
+  6: 53.9,
+  12: 99.9,
 };
 
 type PremiumOfferDuration = (typeof premiumOfferDurations)[number];
@@ -41,11 +41,13 @@ export function normalizeBillingCycleMonths(value?: number | null): PremiumOffer
 
 export function getPremiumOfferForMonths(value?: number | null): PremiumOffer {
   const billingCycleMonths = normalizeBillingCycleMonths(value);
-  const discountPercent = premiumOfferDiscounts[billingCycleMonths];
   const baseTotalPriceBrl = roundCurrency(PREMIUM_MONTHLY_PRICE_BRL * billingCycleMonths);
-  const totalPriceBrl = roundCurrency(baseTotalPriceBrl * ((100 - discountPercent) / 100));
+  const totalPriceBrl = premiumOfferTotals[billingCycleMonths];
   const effectiveMonthlyPriceBrl = roundCurrency(totalPriceBrl / billingCycleMonths);
   const savingsBrl = roundCurrency(baseTotalPriceBrl - totalPriceBrl);
+  const discountPercent = baseTotalPriceBrl
+    ? Math.round((savingsBrl / baseTotalPriceBrl) * 100)
+    : 0;
 
   return {
     billingCycleMonths,
