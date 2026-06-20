@@ -53,6 +53,7 @@ render.yaml
 - `.env.example`: referencia geral
 - `.env.development.example`: desenvolvimento
 - `.env.production.example`: producao
+- `STRIPE_SETUP.md`: passos exatos para ativar o Stripe real
 
 ## Variaveis de ambiente
 
