@@ -178,6 +178,7 @@ Este projeto usa Prisma com conexao direta ao Postgres, nao `supabase-js` nem Da
 - Health check em `GET /health`
 - CORS baseado em `FRONTEND_URL` e `CORS_ALLOWED_ORIGINS`
 - Compatibilidade com Render Free sem `preDeployCommand`
+- Build do Render com `--include=dev` para garantir o Prisma CLI durante a compilacao
 
 ### Migration no Render Free
 
@@ -232,6 +233,7 @@ Depois disso, o serviço no Render pode subir normalmente com o `startCommand`.
 
 - O app foi preparado para publicacao gratuita, mas o backend no Render Free pode entrar em idle e demorar para responder no primeiro acesso.
 - O banco recomendado continua sendo o Supabase Free, nao o Postgres gratuito do Render, porque o Postgres Free do Render expira.
+- O projeto foi fixado em Node `20.x` para evitar comportamento imprevisivel em majors futuras no Vercel e no Render.
 - A resposta da IA deve ser entendida como apoio educacional, nao como prescricao clinica.
 - Se `GEMINI_API_KEY` nao estiver presente, o backend usa respostas mockadas para treino e chat.
 - O plano Free limita mensagens mensais com IA, historico avancado e adaptacoes ilimitadas.
