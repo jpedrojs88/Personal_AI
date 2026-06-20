@@ -149,6 +149,7 @@ export interface BillingStatus {
   payment: {
     provider: "MOCK" | "STRIPE" | "MERCADO_PAGO";
     checkoutReady: boolean;
+    customerPortalReady: boolean;
   };
   features: {
     unlimitedWorkouts: boolean;

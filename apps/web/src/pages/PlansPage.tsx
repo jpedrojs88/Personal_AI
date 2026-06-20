@@ -8,11 +8,19 @@ import type { BillingStatus } from "../types";
 type CheckoutSessionResponse = {
   provider: "MOCK" | "STRIPE" | "MERCADO_PAGO";
   checkoutReady: boolean;
+  customerPortalReady: boolean;
   mockMode: boolean;
   checkoutUrl: string | null;
   message: string;
   billingCycleMonths: number;
   offer: BillingStatus["premiumOffers"][number];
+};
+
+type CustomerPortalResponse = {
+  provider: "STRIPE";
+  portalReady: boolean;
+  url: string;
+  message: string;
 };
 
 const featureRows = [
@@ -60,6 +68,11 @@ export function PlansPage() {
         token,
         body: JSON.stringify({ billingCycleMonths: selectedCycleMonths }),
       }),
+    onSuccess: (response) => {
+      if (response.checkoutUrl) {
+        window.location.assign(response.checkoutUrl);
+      }
+    },
   });
 
   const activatePremiumMutation = useMutation({
@@ -84,6 +97,19 @@ export function PlansPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["billing-status", token] });
       queryClient.invalidateQueries({ queryKey: ["progress-history", token] });
+    },
+  });
+
+  const customerPortalMutation = useMutation({
+    mutationFn: () =>
+      apiRequest<CustomerPortalResponse>("/billing/customer-portal", {
+        method: "POST",
+        token,
+      }),
+    onSuccess: (response) => {
+      if (response.url) {
+        window.location.assign(response.url);
+      }
     },
   });
 
@@ -281,15 +307,29 @@ export function PlansPage() {
                 ? "Ativando..."
                 : "Ativar Premium para teste"}
             </button>
+            {isPremium &&
+            billing?.payment.provider === "STRIPE" &&
+            billing.payment.customerPortalReady ? (
+              <button
+                className="ghost-button"
+                disabled={customerPortalMutation.isPending}
+                onClick={() => customerPortalMutation.mutate()}
+                type="button"
+              >
+                {customerPortalMutation.isPending
+                  ? "Abrindo portal..."
+                  : "Gerenciar assinatura"}
+              </button>
+            ) : null}
           </div>
         </article>
       </div>
 
-      {checkoutMessage ? (
+      {checkoutMessage || customerPortalMutation.data?.message ? (
         <article className="card stack">
           <p className="eyebrow">Pagamento</p>
           <h3>Fluxo preparado para integracao real</h3>
-          <p>{checkoutMessage}</p>
+          <p>{checkoutMessage ?? customerPortalMutation.data?.message}</p>
         </article>
       ) : null}
 

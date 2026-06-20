@@ -112,6 +112,11 @@ export class BillingService {
     return this.paymentsService.createPremiumCheckoutSession(userId, billingCycleMonths);
   }
 
+  async createCustomerPortalSession(userId: string) {
+    await this.ensureUserExists(userId);
+    return this.paymentsService.createCustomerPortalSession(userId);
+  }
+
   private async getOrCreateSubscription(userId: string) {
     await this.ensureUserExists(userId);
 
@@ -211,6 +216,7 @@ export class BillingService {
       payment: {
         provider: this.paymentsService.getConfiguredProvider(),
         checkoutReady: this.paymentsService.isCheckoutReady(),
+        customerPortalReady: this.paymentsService.isCustomerPortalReady(),
       },
       features: {
         unlimitedWorkouts: effectivePlan === SubscriptionPlan.PREMIUM,

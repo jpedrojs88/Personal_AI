@@ -31,6 +31,11 @@ export class BillingController {
     return this.billingService.createCheckoutSessionForCycle(user.id, dto.billingCycleMonths);
   }
 
+  @Post("customer-portal")
+  createCustomerPortal(@CurrentUser() user: AuthenticatedUser) {
+    return this.billingService.createCustomerPortalSession(user.id);
+  }
+
   @Post("mock/reset-free")
   resetFreeForTest(@CurrentUser() user: AuthenticatedUser) {
     return this.billingService.resetFreeForTest(user.id);

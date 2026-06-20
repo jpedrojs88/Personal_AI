@@ -79,6 +79,12 @@ CORS_ALLOWED_ORIGINS="https://your-frontend.vercel.app"
 GEMINI_API_KEY=""
 GEMINI_MODEL="gemini-2.5-flash"
 PAYMENT_PROVIDER="mock"
+STRIPE_SECRET_KEY=""
+STRIPE_PRICE_ID_PREMIUM_MONTHLY=""
+STRIPE_PRICE_ID_PREMIUM_3M=""
+STRIPE_PRICE_ID_PREMIUM_6M=""
+STRIPE_PRICE_ID_PREMIUM_12M=""
+STRIPE_WEBHOOK_SECRET=""
 ```
 
 ### Frontend
@@ -168,6 +174,13 @@ Este projeto usa Prisma com conexao direta ao Postgres, nao `supabase-js` nem Da
    - `GEMINI_API_KEY`
    - `FRONTEND_URL`
    - `BACKEND_URL`
+   - `PAYMENT_PROVIDER`
+   - `STRIPE_SECRET_KEY`
+   - `STRIPE_PRICE_ID_PREMIUM_MONTHLY`
+   - `STRIPE_PRICE_ID_PREMIUM_3M`
+   - `STRIPE_PRICE_ID_PREMIUM_6M`
+   - `STRIPE_PRICE_ID_PREMIUM_12M`
+   - `STRIPE_WEBHOOK_SECRET`
 5. Faça o primeiro deploy.
 6. Verifique `GET /health`.
 
@@ -179,6 +192,9 @@ Este projeto usa Prisma com conexao direta ao Postgres, nao `supabase-js` nem Da
 - CORS baseado em `FRONTEND_URL` e `CORS_ALLOWED_ORIGINS`
 - Compatibilidade com Render Free sem `preDeployCommand`
 - Build do Render com `--include=dev` para garantir o Prisma CLI durante a compilacao
+- Checkout recorrente com Stripe Checkout em `mode: subscription`
+- Webhook publico em `POST /payments/stripe/webhook`
+- Portal do cliente Stripe em `POST /billing/customer-portal`
 
 ### Migration no Render Free
 
@@ -202,8 +218,10 @@ Depois disso, o serviço no Render pode subir normalmente com o `startCommand`.
 - `POST /auth/login`
 - `GET /billing/status`
 - `POST /billing/checkout-session`
+- `POST /billing/customer-portal`
 - `POST /billing/mock/activate-premium`
 - `POST /billing/mock/reset-free`
+- `POST /payments/stripe/webhook`
 - `GET /profile/me`
 - `PUT /profile/me`
 - `POST /workouts/generate`
@@ -236,6 +254,8 @@ Depois disso, o serviço no Render pode subir normalmente com o `startCommand`.
 - O projeto foi fixado em Node `20.x` para evitar comportamento imprevisivel em majors futuras no Vercel e no Render.
 - A resposta da IA deve ser entendida como apoio educacional, nao como prescricao clinica.
 - Se `GEMINI_API_KEY` nao estiver presente, o backend usa respostas mockadas para treino e chat.
+- Para ativar Stripe real, use `PAYMENT_PROVIDER="stripe"` e configure os Price IDs dos ciclos de 1, 3, 6 e 12 meses.
+- No painel do Stripe, aponte o webhook para `https://seu-backend.onrender.com/payments/stripe/webhook`.
 - O plano Free limita mensagens mensais com IA, historico avancado e adaptacoes ilimitadas.
 - O plano Premium libera historico completo, comparativos, mais uso do chat e expansoes futuras.
 - O Premium oferece ciclos de 1, 3, 6 e 12 meses, com descontos de 5%, 10% e 15% para 3, 6 e 12 meses.
