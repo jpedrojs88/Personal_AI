@@ -22,6 +22,25 @@ export interface ExerciseGuide {
   steps: string[];
   attentionPoints: string[];
   disclaimer: string;
+  demo?: {
+    frames: string[];
+    sourceLabel: string;
+    sourceUrl: string;
+  };
+}
+
+const publicDomainFramesBaseUrl =
+  "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises";
+
+function createPublicDomainDemo(path: string) {
+  return {
+    frames: [
+      `${publicDomainFramesBaseUrl}/${path}/0.jpg`,
+      `${publicDomainFramesBaseUrl}/${path}/1.jpg`,
+    ],
+    sourceLabel: "Free Exercise DB (Unlicense)",
+    sourceUrl: "https://github.com/yuhonas/free-exercise-db",
+  };
 }
 
 const guideLibrary: Record<ExerciseGuidePattern, Omit<ExerciseGuide, "title">> = {
@@ -39,6 +58,7 @@ const guideLibrary: Record<ExerciseGuidePattern, Omit<ExerciseGuide, "title">> =
       "Se sentir o ombro pinçando, reduza amplitude e carga.",
     ],
     disclaimer: "Guia educativo. Em caso de dor aguda, interrompa e ajuste com um profissional.",
+    demo: createPublicDomainDemo("Barbell_Bench_Press_-_Medium_Grip"),
   },
   "overhead-press": {
     pattern: "overhead-press",
@@ -54,6 +74,7 @@ const guideLibrary: Record<ExerciseGuidePattern, Omit<ExerciseGuide, "title">> =
       "Mantenha o pescoco relaxado e a cabeca neutra.",
     ],
     disclaimer: "Use controle em toda a subida e descida para proteger ombros e lombar.",
+    demo: createPublicDomainDemo("Dumbbell_Shoulder_Press"),
   },
   "triceps-pushdown": {
     pattern: "triceps-pushdown",
@@ -69,6 +90,7 @@ const guideLibrary: Record<ExerciseGuidePattern, Omit<ExerciseGuide, "title">> =
       "O movimento deve sair do cotovelo, nao do ombro.",
     ],
     disclaimer: "Priorize controle e contração do triceps antes de aumentar a carga.",
+    demo: createPublicDomainDemo("Triceps_Pushdown_-_Rope_Attachment"),
   },
   "lat-pulldown": {
     pattern: "lat-pulldown",
@@ -84,6 +106,7 @@ const guideLibrary: Record<ExerciseGuidePattern, Omit<ExerciseGuide, "title">> =
       "Nao puxe atras da nuca; prefira a frente do corpo.",
     ],
     disclaimer: "Pense em aproximar os cotovelos do bolso para ativar melhor as costas.",
+    demo: createPublicDomainDemo("Wide-Grip_Lat_Pulldown"),
   },
   row: {
     pattern: "row",
@@ -99,6 +122,7 @@ const guideLibrary: Record<ExerciseGuidePattern, Omit<ExerciseGuide, "title">> =
       "Evite puxar so com o antebraco; pense em iniciar pelo cotovelo.",
     ],
     disclaimer: "Mantenha ritmo constante para transformar a remada em trabalho de costas, nao de impulso.",
+    demo: createPublicDomainDemo("Seated_Cable_Rows"),
   },
   "biceps-curl": {
     pattern: "biceps-curl",
@@ -114,6 +138,7 @@ const guideLibrary: Record<ExerciseGuidePattern, Omit<ExerciseGuide, "title">> =
       "Mantenha punho firme, sem quebrar para tras.",
     ],
     disclaimer: "Menos impulso e mais controle costumam gerar melhor estimulo no biceps.",
+    demo: createPublicDomainDemo("Barbell_Curl"),
   },
   "leg-press": {
     pattern: "leg-press",
@@ -129,6 +154,7 @@ const guideLibrary: Record<ExerciseGuidePattern, Omit<ExerciseGuide, "title">> =
       "Nao retire o quadril do banco no final da descida.",
     ],
     disclaimer: "Amplitude boa e segura vale mais do que descer alem do seu controle.",
+    demo: createPublicDomainDemo("Leg_Press"),
   },
   "leg-curl": {
     pattern: "leg-curl",
@@ -144,6 +170,7 @@ const guideLibrary: Record<ExerciseGuidePattern, Omit<ExerciseGuide, "title">> =
       "Evite chutar o peso para cima sem controle.",
     ],
     disclaimer: "Pause um instante no pico para sentir melhor o posterior de coxa.",
+    demo: createPublicDomainDemo("Seated_Leg_Curl"),
   },
   squat: {
     pattern: "squat",
@@ -159,6 +186,7 @@ const guideLibrary: Record<ExerciseGuidePattern, Omit<ExerciseGuide, "title">> =
       "Mantenha o peito vivo para nao colapsar o tronco.",
     ],
     disclaimer: "Se sua mobilidade limitar a amplitude, reduza a profundidade e mantenha a tecnica.",
+    demo: createPublicDomainDemo("Goblet_Squat"),
   },
   lunge: {
     pattern: "lunge",
@@ -174,6 +202,7 @@ const guideLibrary: Record<ExerciseGuidePattern, Omit<ExerciseGuide, "title">> =
       "Nao jogue o corpo para frente para subir.",
     ],
     disclaimer: "No afundo, estabilidade vale mais do que pressa. Comece leve.",
+    demo: createPublicDomainDemo("Dumbbell_Lunges"),
   },
   "calf-raise": {
     pattern: "calf-raise",
@@ -189,6 +218,7 @@ const guideLibrary: Record<ExerciseGuidePattern, Omit<ExerciseGuide, "title">> =
       "Mantenha o peso distribuido entre dedo do pe e parte externa.",
     ],
     disclaimer: "A panturrilha responde melhor com pausa e amplitude completa.",
+    demo: createPublicDomainDemo("Barbell_Seated_Calf_Raise"),
   },
   plank: {
     pattern: "plank",
@@ -204,6 +234,7 @@ const guideLibrary: Record<ExerciseGuidePattern, Omit<ExerciseGuide, "title">> =
       "Se a lombar pesar, reduza o tempo e reative o abdomen.",
     ],
     disclaimer: "Qualidade de postura e mais importante do que segundos extras.",
+    demo: createPublicDomainDemo("Plank"),
   },
   "dead-bug": {
     pattern: "dead-bug",
@@ -219,6 +250,7 @@ const guideLibrary: Record<ExerciseGuidePattern, Omit<ExerciseGuide, "title">> =
       "Movimento lento costuma ensinar melhor a estabilidade do core.",
     ],
     disclaimer: "Se perder a lombar no chao, reduza a amplitude e continue controlado.",
+    demo: createPublicDomainDemo("Dead_Bug"),
   },
   generic: {
     pattern: "generic",
@@ -234,6 +266,7 @@ const guideLibrary: Record<ExerciseGuidePattern, Omit<ExerciseGuide, "title">> =
       "Amplitude segura e melhor do que amplitude maxima sem controle.",
     ],
     disclaimer: "Este exemplo e educativo e nao substitui orientacao presencial individual.",
+    demo: createPublicDomainDemo("Incline_Push-Up"),
   },
 };
 

@@ -38,6 +38,7 @@ render.yaml
 - Onboarding com idade, sexo, peso, altura, objetivo, nivel, dias disponiveis e local de treino
 - Geracao de treino com Gemini ou fallback mock
 - Visualizacao do treino diario
+- Guias visuais animados para exercicios com fallback local
 - Marcacao de exercicios concluidos
 - Registro de peso corporal
 - Registro de cargas
@@ -255,6 +256,7 @@ Depois disso, o serviço no Render pode subir normalmente com o `startCommand`.
 - O projeto foi fixado em Node `20.x` para evitar comportamento imprevisivel em majors futuras no Vercel e no Render.
 - A resposta da IA deve ser entendida como apoio educacional, nao como prescricao clinica.
 - Se `GEMINI_API_KEY` nao estiver presente, o backend usa respostas mockadas para treino e chat.
+- Os guias visuais animados usam exemplos publicos do Free Exercise DB quando houver correspondencia de movimento.
 - Para ativar Stripe real, use `PAYMENT_PROVIDER="stripe"` e configure os Price IDs dos ciclos de 1, 3, 6 e 12 meses.
 - No painel do Stripe, aponte o webhook para `https://seu-backend.onrender.com/payments/stripe/webhook`.
 - O plano Free limita mensagens mensais com IA, historico avancado e adaptacoes ilimitadas.
@@ -271,3 +273,4 @@ Depois disso, o serviço no Render pode subir normalmente com o `startCommand`.
 - [Vercel Vite docs](https://vercel.com/docs/frameworks/frontend/vite)
 - [Supabase Prisma guide](https://supabase.com/docs/guides/database/prisma)
 - [Supabase changelog](https://supabase.com/changelog)
+- [Free Exercise DB](https://github.com/yuhonas/free-exercise-db)

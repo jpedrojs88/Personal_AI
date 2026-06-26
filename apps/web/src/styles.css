@@ -665,6 +665,45 @@ textarea {
   color: var(--muted);
 }
 
+.guide-source a {
+  color: var(--primary);
+}
+
+.guide-gif-card {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: center;
+}
+
+.guide-gif {
+  width: min(100%, 21rem);
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.guide-gif__dots {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.guide-gif__dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.guide-gif__dot--active {
+  background: var(--primary);
+  box-shadow: 0 0 0 5px rgba(33, 210, 173, 0.12);
+}
+
 .guide-illustration {
   display: grid;
   place-items: center;
