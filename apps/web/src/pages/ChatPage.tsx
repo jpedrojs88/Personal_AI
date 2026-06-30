@@ -112,7 +112,7 @@ export function ChatPage() {
           resultados.
         </p>
         <div className="hero-inline-stats">
-          <span>{billing?.effectivePlan === "PREMIUM" ? "Premium" : "Free"}</span>
+          <span>{billing?.effectivePlan === "PREMIUM" ? "Premium" : "Gratuito"}</span>
           <span>
             {billing
               ? `${billing.monthlyMessagesRemaining}/${billing.monthlyMessageLimit} mensagens`
@@ -125,8 +125,8 @@ export function ChatPage() {
       {aiBlocked ? (
         <article className="card stack card--warning">
           <p className="eyebrow">Limite mensal atingido</p>
-          <h3>O Coach IA pausou novas respostas no plano Free</h3>
-          <p>Ative o Premium para teste ou aguarde o proximo ciclo mensal para continuar.</p>
+          <h3>O Coach IA pausou novas respostas no plano Gratuito</h3>
+          <p>Ative o Premium ou aguarde o proximo ciclo mensal para continuar.</p>
           <Link className="primary-button primary-button--small" to="/app/plans">
             Ver planos
           </Link>

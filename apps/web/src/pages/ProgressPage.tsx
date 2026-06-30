@@ -232,7 +232,7 @@ export function ProgressPage() {
         {!premiumHistoryEnabled || !comparisonEnabled ? (
           <div className="premium-inline-note">
             <p>
-              O plano Free mostra o historico basico e bloqueia comparativos avancados de
+              O plano Gratuito mostra o historico basico e bloqueia comparativos avancados de
               exercicios.
             </p>
             <Link className="ghost-link" to="/app/plans">

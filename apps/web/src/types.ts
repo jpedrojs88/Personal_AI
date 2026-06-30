@@ -148,6 +148,7 @@ export interface BillingStatus {
   monthlyMessagesRemaining: number;
   payment: {
     provider: "MOCK" | "STRIPE" | "MERCADO_PAGO";
+    mode: "MOCK" | "TEST" | "LIVE";
     checkoutReady: boolean;
     customerPortalReady: boolean;
   };

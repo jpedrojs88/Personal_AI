@@ -215,6 +215,7 @@ export class BillingService {
       monthlyMessagesRemaining,
       payment: {
         provider: this.paymentsService.getConfiguredProvider(),
+        mode: this.paymentsService.getProviderMode(),
         checkoutReady: this.paymentsService.isCheckoutReady(),
         customerPortalReady: this.paymentsService.isCustomerPortalReady(),
       },
@@ -263,7 +264,7 @@ export class BillingService {
       throw new HttpException(
         {
           message:
-            "Seu limite mensal de mensagens com IA no plano Free foi atingido. Ative o Premium para continuar.",
+            "Seu limite mensal de mensagens com IA no plano Gratuito foi atingido. Ative o Premium para continuar.",
           code: "FREE_PLAN_AI_LIMIT_REACHED",
         },
         403,
@@ -287,7 +288,7 @@ export class BillingService {
     });
 
     if (!user) {
-      throw new NotFoundException("User not found.");
+      throw new NotFoundException("Usuario nao encontrado.");
     }
   }
 }

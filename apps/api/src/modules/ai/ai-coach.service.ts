@@ -90,7 +90,7 @@ export class AiCoachService {
     });
 
     if (!user) {
-      throw new NotFoundException("User not found for AI Coach chat persistence.");
+      throw new NotFoundException("Usuario nao encontrado para salvar o historico do Coach IA.");
     }
   }
 }

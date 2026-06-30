@@ -60,6 +60,20 @@ export class PaymentsService {
     return this.getConfiguredProvider() === PaymentProvider.STRIPE && this.hasStripeBaseConfig();
   }
 
+  getProviderMode() {
+    if (this.getConfiguredProvider() !== PaymentProvider.STRIPE) {
+      return "MOCK" as const;
+    }
+
+    const secretKey = this.configService.get<string>("STRIPE_SECRET_KEY")?.trim();
+
+    if (secretKey?.startsWith("sk_live_")) {
+      return "LIVE" as const;
+    }
+
+    return "TEST" as const;
+  }
+
   async createPremiumCheckoutSession(userId: string, billingCycleMonths?: number) {
     const offer = getPremiumOfferForMonths(billingCycleMonths);
 
@@ -92,7 +106,7 @@ export class PaymentsService {
     });
 
     if (!user) {
-      throw new NotFoundException("User not found.");
+      throw new NotFoundException("Usuario nao encontrado.");
     }
 
     const priceId = this.getStripePriceId(offer.billingCycleMonths);
@@ -420,7 +434,9 @@ export class PaymentsService {
       return this.stripeClient;
     }
 
-    this.stripeClient = new Stripe(secretKey);
+    this.stripeClient = new Stripe(secretKey, {
+      apiVersion: "2026-05-27.dahlia",
+    });
     return this.stripeClient;
   }
 }

@@ -250,7 +250,7 @@ export function WorkoutPage() {
           </div>
 
           <div className="coach-tip">
-            <p className="eyebrow">Coach tip</p>
+            <p className="eyebrow">Dica do coach</p>
             <p>Registre carga e repeticoes para manter sua progressao semanal mais clara.</p>
           </div>
         </article>

@@ -38,7 +38,7 @@ function createPublicDomainDemo(path: string) {
       `${publicDomainFramesBaseUrl}/${path}/0.jpg`,
       `${publicDomainFramesBaseUrl}/${path}/1.jpg`,
     ],
-    sourceLabel: "Free Exercise DB (Unlicense)",
+    sourceLabel: "Free Exercise DB (dominio publico)",
     sourceUrl: "https://github.com/yuhonas/free-exercise-db",
   };
 }

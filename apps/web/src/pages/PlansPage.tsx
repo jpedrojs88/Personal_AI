@@ -51,6 +51,35 @@ const featureRows = [
   },
 ] as const;
 
+function getProviderLabel(billing?: BillingStatus | null) {
+  if (!billing) {
+    return "Carregando";
+  }
+
+  if (billing.payment.provider === "STRIPE") {
+    return billing.payment.mode === "LIVE" ? "Stripe ao vivo" : "Stripe teste";
+  }
+
+  if (billing.payment.provider === "MERCADO_PAGO") {
+    return "Mercado Pago";
+  }
+
+  return "Simulacao";
+}
+
+function getStatusLabel(status?: BillingStatus["status"]) {
+  switch (status) {
+    case "ACTIVE":
+      return "Ativo";
+    case "CANCELED":
+      return "Cancelado";
+    case "EXPIRED":
+      return "Expirado";
+    default:
+      return "Ativo";
+  }
+}
+
 export function PlansPage() {
   const { token } = useAuth();
   const queryClient = useQueryClient();
@@ -125,6 +154,9 @@ export function PlansPage() {
   const isPremium = billing?.effectivePlan === "PREMIUM";
   const isLimitReached = !isPremium && (billing?.monthlyMessagesRemaining ?? 0) <= 0;
   const checkoutMessage = checkoutMutation.data?.message;
+  const hasRealCheckout = billing?.payment.provider === "STRIPE" && billing.payment.mode === "LIVE";
+  const hasConfiguredStripe = billing?.payment.provider === "STRIPE" && billing.payment.checkoutReady;
+  const showMockActions = !hasConfiguredStripe;
 
   useEffect(() => {
     if (!offers.length) {
@@ -151,16 +183,16 @@ export function PlansPage() {
         </p>
         <div className="hero-inline-stats">
           <span>{selectedOffer?.effectiveMonthlyPriceLabel ?? "R$ 9,90 / mes"}</span>
-          <span>{isPremium ? "Recursos Premium liberados" : "Modo Free ativo"}</span>
-          <span>{billing?.payment.provider ?? "MOCK"}</span>
+          <span>{isPremium ? "Recursos Premium liberados" : "Modo Gratuito ativo"}</span>
+          <span>{getProviderLabel(billing)}</span>
         </div>
       </div>
 
       <div className="grid-cards grid-cards--triple">
         <article className="card stat-card stat-card--accent">
           <span>Plano atual</span>
-          <strong>{isPremium ? "Premium" : "Free"}</strong>
-          <small>Status: {billing?.status ?? "ACTIVE"}</small>
+          <strong>{isPremium ? "Premium" : "Gratuito"}</strong>
+          <small>Status: {getStatusLabel(billing?.status)}</small>
         </article>
         <article className="card stat-card">
           <span>Mensagens com IA</span>
@@ -185,10 +217,9 @@ export function PlansPage() {
       {isLimitReached ? (
         <article className="card stack card--warning">
           <p className="eyebrow">Limite atingido</p>
-          <h3>Seu plano Free esgotou as mensagens com IA deste mes</h3>
+          <h3>Seu plano Gratuito esgotou as mensagens com IA deste mes</h3>
           <p>
-            Ative o Premium de teste para continuar usando o coach ou aguarde o proximo ciclo
-            mensal.
+            Ative o Premium para continuar usando o coach ou aguarde o proximo ciclo mensal.
           </p>
         </article>
       ) : null}
@@ -199,7 +230,7 @@ export function PlansPage() {
         >
           <div className="pricing-card__header">
             <div>
-              <p className="eyebrow">Free</p>
+              <p className="eyebrow">Gratuito</p>
               <h3>Essencial</h3>
             </div>
             <strong>R$ 0</strong>
@@ -214,14 +245,16 @@ export function PlansPage() {
               </li>
             ))}
           </ul>
-          <button
-            className="ghost-button"
-            disabled={resetFreeMutation.isPending || !isPremium}
-            onClick={() => resetFreeMutation.mutate()}
-            type="button"
-          >
-            {resetFreeMutation.isPending ? "Voltando..." : "Usar plano Free"}
-          </button>
+          {showMockActions ? (
+            <button
+              className="ghost-button"
+              disabled={resetFreeMutation.isPending || !isPremium}
+              onClick={() => resetFreeMutation.mutate()}
+              type="button"
+            >
+              {resetFreeMutation.isPending ? "Voltando..." : "Usar plano Gratuito"}
+            </button>
+          ) : null}
         </article>
 
         <article className="card pricing-card pricing-card--premium">
@@ -297,16 +330,18 @@ export function PlansPage() {
             >
               {checkoutMutation.isPending ? "Preparando..." : "Assinar Premium"}
             </button>
-            <button
-              className="ghost-button"
-              disabled={activatePremiumMutation.isPending}
-              onClick={() => activatePremiumMutation.mutate()}
-              type="button"
-            >
-              {activatePremiumMutation.isPending
-                ? "Ativando..."
-                : "Ativar Premium para teste"}
-            </button>
+            {showMockActions ? (
+              <button
+                className="ghost-button"
+                disabled={activatePremiumMutation.isPending}
+                onClick={() => activatePremiumMutation.mutate()}
+                type="button"
+              >
+                {activatePremiumMutation.isPending
+                  ? "Ativando..."
+                  : "Ativar Premium para teste"}
+              </button>
+            ) : null}
             {isPremium &&
             billing?.payment.provider === "STRIPE" &&
             billing.payment.customerPortalReady ? (
@@ -328,15 +363,27 @@ export function PlansPage() {
       {checkoutMessage || customerPortalMutation.data?.message ? (
         <article className="card stack">
           <p className="eyebrow">Pagamento</p>
-          <h3>Fluxo preparado para integracao real</h3>
+          <h3>{hasRealCheckout ? "Cobranca real ativa no Stripe" : "Fluxo de pagamento pronto"}</h3>
           <p>{checkoutMessage ?? customerPortalMutation.data?.message}</p>
+        </article>
+      ) : null}
+
+      {hasConfiguredStripe ? (
+        <article className="card stack">
+          <p className="eyebrow">Stripe</p>
+          <h3>{hasRealCheckout ? "Conta ao vivo conectada" : "Conta de teste conectada"}</h3>
+          <p>
+            {hasRealCheckout
+              ? "O checkout esta operando com a conta real do Stripe. Os botoes de teste ficam ocultos para evitar ativacoes simuladas em producao."
+              : "O checkout esta configurado no Stripe, mas ainda usando credenciais de teste. Troque para as chaves e webhook live para iniciar a cobranca real."}
+          </p>
         </article>
       ) : null}
 
       <article className="card stack">
         <div className="row-between">
           <h3>Status da assinatura</h3>
-          <span className="pill">{billing?.payment.provider ?? "MOCK"}</span>
+          <span className="pill">{getProviderLabel(billing)}</span>
         </div>
         <div className="profile-grid">
           <div className="profile-stat">

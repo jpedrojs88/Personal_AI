@@ -77,7 +77,7 @@ export class MockAiCoachProvider implements AiCoachProvider {
     return {
       title: `Plano ${questionnaire.trainingLocation === "home" ? "Casa" : "Academia"} ${questionnaire.availableDays.length}x`,
       disclaimer:
-        "Treino gerado como apoio educacional. O AI Coach nao faz diagnostico medico nem promete resultados.",
+        "Treino gerado como apoio educacional. O Coach IA nao faz diagnostico medico nem promete resultados.",
       weeklySplit: questionnaire.availableDays.map((dayName, index) => ({
         dayName,
         focus: templates[index % templates.length].focus,

@@ -11,7 +11,7 @@ export class JwtAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<{ authUser?: unknown }>();
 
     if (!request.authUser) {
-      throw new UnauthorizedException("Authentication required.");
+      throw new UnauthorizedException("Autenticacao obrigatoria.");
     }
 
     return true;

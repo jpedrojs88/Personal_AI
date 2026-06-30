@@ -1,6 +1,6 @@
-# Stripe Setup
+# Configuracao do Stripe
 
-Guia rapido para ativar o Stripe real no Personal IA.
+Guia rapido para ativar o Stripe em modo real no Personal IA.
 
 ## Produto
 
@@ -9,63 +9,71 @@ Crie um produto no Stripe com:
 - Nome: `Personal IA Premium`
 - Descricao: `Assinatura Premium do Personal IA com treinos ilimitados, chat ampliado e historico completo.`
 
-## Prices
+## Precos
 
-Crie 4 prices recorrentes em `BRL` para o mesmo produto.
+Crie 4 precos recorrentes em `BRL` para o mesmo produto.
 
-### Price 1
+### Preco 1
 
 - Ciclo: `1 mes`
-- Tipo: `Recurring`
-- Intervalo: `Month`
-- Interval count: `1`
+- Tipo: `Recorrente`
+- Intervalo: `Mensal`
+- Quantidade de intervalos: `1`
 - Valor: `R$ 9,90`
 - `unit_amount`: `990`
 - Variavel: `STRIPE_PRICE_ID_PREMIUM_MONTHLY`
 
-### Price 2
+### Preco 2
 
 - Ciclo: `3 meses`
-- Tipo: `Recurring`
-- Intervalo: `Month`
-- Interval count: `3`
+- Tipo: `Recorrente`
+- Intervalo: `Mensal`
+- Quantidade de intervalos: `3`
 - Valor: `R$ 27,90`
 - `unit_amount`: `2790`
 - Variavel: `STRIPE_PRICE_ID_PREMIUM_3M`
 
-### Price 3
+### Preco 3
 
 - Ciclo: `6 meses`
-- Tipo: `Recurring`
-- Intervalo: `Month`
-- Interval count: `6`
+- Tipo: `Recorrente`
+- Intervalo: `Mensal`
+- Quantidade de intervalos: `6`
 - Valor: `R$ 53,90`
 - `unit_amount`: `5390`
 - Variavel: `STRIPE_PRICE_ID_PREMIUM_6M`
 
-### Price 4
+### Preco 4
 
 - Ciclo: `12 meses`
-- Tipo: `Recurring`
-- Intervalo: `Month`
-- Interval count: `12`
+- Tipo: `Recorrente`
+- Intervalo: `Mensal`
+- Quantidade de intervalos: `12`
 - Valor: `R$ 99,90`
 - `unit_amount`: `9990`
 - Variavel: `STRIPE_PRICE_ID_PREMIUM_12M`
 
-## Variaveis no Render
+## Variaveis no Render para conta real
 
 Configure no backend:
 
 ```env
 PAYMENT_PROVIDER=stripe
-STRIPE_SECRET_KEY=sk_live_ou_sk_test...
+STRIPE_SECRET_KEY=sk_live_...
 STRIPE_PRICE_ID_PREMIUM_MONTHLY=price_...
 STRIPE_PRICE_ID_PREMIUM_3M=price_...
 STRIPE_PRICE_ID_PREMIUM_6M=price_...
 STRIPE_PRICE_ID_PREMIUM_12M=price_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 ```
+
+## Antes de publicar em modo real
+
+1. No painel do Stripe, troque da area de teste para a conta de producao.
+2. Confirme que os `price_...` usados nas variaveis sao os da conta real, nao os de teste.
+3. Use uma chave `sk_live_...` em `STRIPE_SECRET_KEY`.
+4. Gere um novo `STRIPE_WEBHOOK_SECRET` a partir do webhook da conta real.
+5. Faça um novo deploy do backend no Render apos salvar as variaveis.
 
 ## Webhook
 
@@ -94,11 +102,11 @@ Depois de criar o webhook, copie o secret para `STRIPE_WEBHOOK_SECRET`.
 6. O backend atualiza a assinatura no banco e libera o Premium.
 7. O usuario pode depois abrir `Gerenciar assinatura` para acessar o portal do cliente.
 
-## Teste rapido
+## Validacao em producao
 
 1. Configure as variaveis no Render.
 2. Faça um deploy novo do backend.
 3. Abra `/app/plans`.
 4. Clique em `Assinar Premium`.
-5. Conclua um pagamento de teste no Stripe.
+5. Conclua um pagamento real no Stripe.
 6. Confirme se `GET /billing/status` retorna `effectivePlan: PREMIUM`.

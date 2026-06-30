@@ -17,6 +17,12 @@ const levelLabels: Record<string, string> = {
   advanced: "Avancado",
 };
 
+const sexLabels: Record<string, string> = {
+  male: "Masculino",
+  female: "Feminino",
+  other: "Outro",
+};
+
 export function ProfilePage() {
   const { token, user } = useAuth();
 
@@ -57,7 +63,7 @@ export function ProfilePage() {
 
         <article className="card stack">
           <p className="eyebrow">Plano atual</p>
-          <h3>{isPremium ? "Premium ativo" : "Free ativo"}</h3>
+          <h3>{isPremium ? "Premium ativo" : "Gratuito ativo"}</h3>
           <p>
             {billing
               ? `${billing.monthlyMessagesRemaining} mensagens com IA restantes neste ciclo`
@@ -82,7 +88,7 @@ export function ProfilePage() {
             </div>
             <div className="profile-stat">
               <span>Sexo</span>
-              <strong>{profile.sex}</strong>
+              <strong>{sexLabels[profile.sex] ?? "Nao informado"}</strong>
             </div>
             <div className="profile-stat">
               <span>Altura</span>

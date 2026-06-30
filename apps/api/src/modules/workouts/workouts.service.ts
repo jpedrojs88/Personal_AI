@@ -59,7 +59,7 @@ export class WorkoutsService {
     });
 
     if (!user) {
-      throw new NotFoundException("User not found.");
+      throw new NotFoundException("Usuario nao encontrado.");
     }
 
     const generated = await this.createGeneratedPlan(userId, questionnaire, true);
@@ -161,7 +161,7 @@ export class WorkoutsService {
     });
 
     if (!exercise) {
-      throw new NotFoundException("Exercise not found.");
+      throw new NotFoundException("Exercicio nao encontrado.");
     }
 
     const fallbackReps = this.extractFirstNumber(exercise.reps) ?? 0;
@@ -363,7 +363,7 @@ export class WorkoutsService {
     });
 
     if (!user) {
-      throw new NotFoundException("User not found.");
+      throw new NotFoundException("Usuario nao encontrado.");
     }
   }
 

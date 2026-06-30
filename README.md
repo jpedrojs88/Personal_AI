@@ -1,6 +1,6 @@
 # Personal IA
 
-MVP full-stack de um personal trainer virtual com IA para usuarios comuns de academia. O app gera treino inicial, acompanha evolucao, oferece chat com IA e diferencia experiencias Free e Premium, sempre com postura educacional e sem diagnosticos medicos.
+MVP full-stack de um personal trainer virtual com IA para usuarios comuns de academia. O app gera treino inicial, acompanha evolucao, oferece chat com IA e diferencia experiencias Gratuito e Premium, sempre com postura educacional e sem diagnosticos medicos.
 
 ## Stack
 
@@ -44,7 +44,7 @@ render.yaml
 - Registro de cargas
 - Historico de evolucao
 - Chat com IA para adaptacoes e duvidas basicas
-- Estrutura de monetizacao Free e Premium
+- Estrutura de monetizacao Gratuito e Premium
 
 ## Arquivos de producao
 
@@ -247,7 +247,7 @@ Depois disso, o serviço no Render pode subir normalmente com o `startCommand`.
 - [ ] Geracao de treino funcionando
 - [ ] Chat IA funcionando
 - [ ] Tela de planos funcionando
-- [ ] Limites Free/Premium funcionando
+- [ ] Limites Gratuito/Premium funcionando
 - [ ] `GET /health` respondendo `status: ok`
 - [ ] `VITE_API_URL` apontando para o backend publicado
 - [ ] `FRONTEND_URL` configurado no backend publicado
@@ -263,7 +263,7 @@ Depois disso, o serviço no Render pode subir normalmente com o `startCommand`.
 - Os guias visuais animados usam exemplos publicos do Free Exercise DB quando houver correspondencia de movimento.
 - Para ativar Stripe real, use `PAYMENT_PROVIDER="stripe"` e configure os Price IDs dos ciclos de 1, 3, 6 e 12 meses.
 - No painel do Stripe, aponte o webhook para `https://seu-backend.onrender.com/payments/stripe/webhook`.
-- O plano Free limita mensagens mensais com IA, historico avancado e adaptacoes ilimitadas.
+- O plano Gratuito limita mensagens mensais com IA, historico avancado e adaptacoes ilimitadas.
 - O plano Premium libera historico completo, comparativos, mais uso do chat e expansoes futuras.
 - O Premium oferece ciclos de 1, 3, 6 e 12 meses, com valores arredondados e desconto progressivo para os planos mais longos.
 - Para testar sem gateway real, entre em `/app/plans` e use `Ativar Premium para teste`.
