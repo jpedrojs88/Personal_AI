@@ -3,17 +3,50 @@ import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 
+function normalizeOrigin(value: string) {
+  return value.trim().replace(/\/+$/, "");
+}
+
+function parseConfiguredValues(rawValues: Array<string | undefined>) {
+  return rawValues
+    .flatMap((value) => value?.split(",") ?? [])
+    .map((value) => normalizeOrigin(value))
+    .filter(Boolean);
+}
+
+function escapeRegex(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function parseAllowedOrigins(rawValues: Array<string | undefined>) {
   const defaults = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
   ];
-  const configured = rawValues
-    .flatMap((value) => value?.split(",") ?? [])
-    .map((value) => value.trim())
-    .filter(Boolean);
+  const configured = parseConfiguredValues(rawValues);
 
-  return [...new Set([...defaults, ...configured])];
+  return [...new Set([...defaults.map((value) => normalizeOrigin(value)), ...configured])];
+}
+
+function parseAllowedOriginPatterns(
+  rawValues: Array<string | undefined>,
+  frontendUrl?: string,
+) {
+  const configuredPatterns = parseConfiguredValues(rawValues);
+  const inferredPatterns: string[] = [];
+
+  if (frontendUrl?.includes(".vercel.app")) {
+    inferredPatterns.push("https://*.vercel.app");
+  }
+
+  return [...new Set([...configuredPatterns, ...inferredPatterns])].map((pattern) => {
+    const normalizedPattern = normalizeOrigin(pattern);
+
+    return new RegExp(
+      `^${escapeRegex(normalizedPattern).replace(/\\\*/g, "[^/]+")}$`,
+      "i",
+    );
+  });
 }
 
 async function bootstrap() {
@@ -21,22 +54,32 @@ async function bootstrap() {
     rawBody: true,
   });
   const configService = app.get(ConfigService);
+  const frontendUrl = configService.get<string>("FRONTEND_URL");
   const allowedOrigins = parseAllowedOrigins([
-    configService.get<string>("FRONTEND_URL"),
+    frontendUrl,
     configService.get<string>("CORS_ALLOWED_ORIGINS"),
   ]);
+  const allowedOriginPatterns = parseAllowedOriginPatterns(
+    [configService.get<string>("CORS_ALLOWED_ORIGIN_PATTERNS")],
+    frontendUrl,
+  );
 
   app.enableCors({
     origin: (
       origin: string | undefined,
       callback: (error: Error | null, allow?: boolean) => void,
     ) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      const normalizedOrigin = origin ? normalizeOrigin(origin) : undefined;
+      const isAllowedByPattern = normalizedOrigin
+        ? allowedOriginPatterns.some((pattern) => pattern.test(normalizedOrigin))
+        : false;
+
+      if (!normalizedOrigin || allowedOrigins.includes(normalizedOrigin) || isAllowedByPattern) {
         callback(null, true);
         return;
       }
 
-      callback(new Error("Origin not allowed by CORS"), false);
+      callback(null, false);
     },
     credentials: true,
   });

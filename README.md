@@ -66,6 +66,7 @@ render.yaml
 - `FRONTEND_URL`: URL publica do frontend
 - `BACKEND_URL`: URL publica do backend
 - `VITE_API_URL`: URL do backend consumida pelo frontend
+- `CORS_ALLOWED_ORIGIN_PATTERNS`: padroes extras de origem liberada, como previews da Vercel
 
 ### Backend
 
@@ -78,6 +79,7 @@ PORT=10000
 FRONTEND_URL="https://your-frontend.vercel.app"
 BACKEND_URL="https://your-backend.onrender.com"
 CORS_ALLOWED_ORIGINS="https://your-frontend.vercel.app"
+CORS_ALLOWED_ORIGIN_PATTERNS="https://*.vercel.app"
 GEMINI_API_KEY=""
 GEMINI_MODEL="gemini-2.5-flash"
 PAYMENT_PROVIDER="mock"
@@ -176,6 +178,7 @@ Este projeto usa Prisma com conexao direta ao Postgres, nao `supabase-js` nem Da
    - `GEMINI_API_KEY`
    - `FRONTEND_URL`
    - `BACKEND_URL`
+   - `CORS_ALLOWED_ORIGIN_PATTERNS`
    - `PAYMENT_PROVIDER`
    - `STRIPE_SECRET_KEY`
    - `STRIPE_PRICE_ID_PREMIUM_MONTHLY`
@@ -192,6 +195,7 @@ Este projeto usa Prisma com conexao direta ao Postgres, nao `supabase-js` nem Da
 - Start de producao com `npm --workspace apps/api run start:prod`
 - Health check em `GET /health`
 - CORS baseado em `FRONTEND_URL` e `CORS_ALLOWED_ORIGINS`
+- Suporte a previews da Vercel via `CORS_ALLOWED_ORIGIN_PATTERNS` e inferencia automatica quando `FRONTEND_URL` usa `*.vercel.app`
 - Compatibilidade com Render Free sem `preDeployCommand`
 - Build do Render com `--include=dev` para garantir o Prisma CLI durante a compilacao
 - Checkout recorrente com Stripe Checkout em `mode: subscription`
