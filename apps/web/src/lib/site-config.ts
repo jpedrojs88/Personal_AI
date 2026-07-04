@@ -15,9 +15,9 @@ function normalizePhone(value: string) {
 
 export const siteConfig = {
   brandName: readEnv(import.meta.env.VITE_LEGAL_BUSINESS_NAME, "Personal IA"),
-  legalEmail: readEnv(import.meta.env.VITE_CONTACT_EMAIL, "contato@personalia.app"),
-  supportPhone: readEnv(import.meta.env.VITE_CONTACT_PHONE, ""),
-  whatsapp: readEnv(import.meta.env.VITE_CONTACT_WHATSAPP, ""),
+  legalEmail: readEnv(import.meta.env.VITE_CONTACT_EMAIL, "suporte.novapride@gmail.com"),
+  supportPhone: readEnv(import.meta.env.VITE_CONTACT_PHONE, "(83) 9 9807-1877"),
+  whatsapp: readEnv(import.meta.env.VITE_CONTACT_WHATSAPP, "(83) 9 9807-1877"),
   instagram: readEnv(import.meta.env.VITE_CONTACT_INSTAGRAM, ""),
   address: readEnv(import.meta.env.VITE_CONTACT_ADDRESS, "Endereco comercial sob demanda no canal de suporte."),
   supportHours: readEnv(
