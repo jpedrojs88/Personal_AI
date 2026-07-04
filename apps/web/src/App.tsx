@@ -2,13 +2,16 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ChatPage } from "./pages/ChatPage";
+import { ContactPage } from "./pages/ContactPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { PlansPage } from "./pages/PlansPage";
+import { PrivacyPolicyPage } from "./pages/PrivacyPolicyPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { ProgressPage } from "./pages/ProgressPage";
 import { RegisterPage } from "./pages/RegisterPage";
+import { TermsOfUsePage } from "./pages/TermsOfUsePage";
 import { WorkoutPage } from "./pages/WorkoutPage";
 
 export function App() {
@@ -16,6 +19,9 @@ export function App() {
     <Routes>
       <Route element={<LoginPage />} path="/login" />
       <Route element={<RegisterPage />} path="/register" />
+      <Route element={<PrivacyPolicyPage />} path="/privacidade" />
+      <Route element={<TermsOfUsePage />} path="/termos" />
+      <Route element={<ContactPage />} path="/contato" />
       <Route
         element={
           <ProtectedRoute>

@@ -1,5 +1,6 @@
 import { FormEvent, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
+import { LegalLinks } from "../components/LegalLinks";
 import { useAuth } from "../lib/auth";
 
 export function RegisterPage() {
@@ -79,6 +80,8 @@ export function RegisterPage() {
         <p className="auth-footer">
           Ja possui acesso? <Link to="/login">Entrar</Link>
         </p>
+
+        <LegalLinks />
       </div>
     </section>
   );

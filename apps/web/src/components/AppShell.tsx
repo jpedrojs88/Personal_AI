@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { NavLink, Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { apiRequest } from "../lib/api";
+import { LegalLinks } from "./LegalLinks";
 import type { Profile } from "../types";
 
 const navItems = [
@@ -74,6 +75,10 @@ export function AppShell() {
       <main className="main-content">
         <Outlet context={{ profile }} />
       </main>
+
+      <footer className="app-footer">
+        <LegalLinks />
+      </footer>
 
       <nav className="bottom-nav">
         {navItems.map((item) => (

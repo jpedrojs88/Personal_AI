@@ -106,6 +106,23 @@ textarea {
   color: var(--primary);
 }
 
+.legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.legal-links a {
+  color: var(--muted);
+}
+
+.legal-links a:hover {
+  color: var(--primary);
+}
+
 .eyebrow {
   margin: 0;
   font-size: 0.78rem;
@@ -196,6 +213,11 @@ textarea {
   padding: 1.25rem 1rem 6rem;
 }
 
+.app-footer {
+  margin-top: 1.25rem;
+  padding-bottom: 6rem;
+}
+
 .topbar,
 .row-between,
 .list-row {
@@ -234,6 +256,122 @@ textarea {
 .hero-card,
 .card {
   padding: 1.2rem;
+}
+
+.legal-page {
+  min-height: 100vh;
+  padding: 1.5rem;
+}
+
+.legal-shell {
+  width: min(100%, 68rem);
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.legal-hero {
+  display: grid;
+  gap: 1rem;
+  padding: 1.4rem;
+  border-radius: 30px;
+  border: 1px solid var(--border);
+  background:
+    linear-gradient(135deg, rgba(33, 210, 173, 0.12), rgba(247, 140, 107, 0.08)),
+    var(--surface-strong);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+}
+
+.legal-hero h1 {
+  margin: 0.25rem 0 0;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  line-height: 1;
+}
+
+.legal-hero__actions {
+  display: grid;
+  gap: 0.9rem;
+  justify-items: start;
+}
+
+.legal-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.legal-content {
+  display: grid;
+  gap: 1.35rem;
+}
+
+.legal-content section {
+  display: grid;
+  gap: 0.65rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.legal-content section:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.legal-content h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.legal-content p,
+.legal-content li {
+  color: #dbe4f1;
+  line-height: 1.65;
+}
+
+.legal-content ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.legal-content a {
+  color: var(--primary);
+}
+
+.legal-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.contact-grid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.contact-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.contact-card span {
+  color: var(--muted);
+}
+
+.contact-card strong {
+  color: #f5f7fb;
+  word-break: break-word;
+}
+
+.profile-stat--full {
+  grid-column: 1 / -1;
 }
 
 .hero-card {
@@ -1006,6 +1144,10 @@ textarea {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .contact-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .offer-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1027,6 +1169,11 @@ textarea {
 
   .guide-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .legal-hero {
+    grid-template-columns: 1.4fr auto;
+    align-items: end;
   }
 }
 

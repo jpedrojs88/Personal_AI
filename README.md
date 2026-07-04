@@ -45,6 +45,7 @@ render.yaml
 - Historico de evolucao
 - Chat com IA para adaptacoes e duvidas basicas
 - Estrutura de monetizacao Gratuito e Premium
+- Paginas publicas de politica de privacidade, termos de uso e contato
 
 ## Arquivos de producao
 
@@ -67,6 +68,13 @@ render.yaml
 - `BACKEND_URL`: URL publica do backend
 - `VITE_API_URL`: URL do backend consumida pelo frontend
 - `CORS_ALLOWED_ORIGIN_PATTERNS`: padroes extras de origem liberada, como previews da Vercel
+- `VITE_LEGAL_BUSINESS_NAME`: nome exibido nas paginas legais
+- `VITE_CONTACT_EMAIL`: e-mail publico de suporte
+- `VITE_CONTACT_PHONE`: telefone publico de atendimento
+- `VITE_CONTACT_WHATSAPP`: WhatsApp publico de atendimento
+- `VITE_CONTACT_INSTAGRAM`: perfil publico para relacionamento
+- `VITE_CONTACT_ADDRESS`: endereco comercial exibido no site
+- `VITE_CONTACT_SUPPORT_HOURS`: horario de atendimento exibido no site
 
 ### Backend
 
@@ -95,6 +103,13 @@ STRIPE_WEBHOOK_SECRET=""
 
 ```env
 VITE_API_URL="https://your-backend.onrender.com"
+VITE_LEGAL_BUSINESS_NAME="Personal IA"
+VITE_CONTACT_EMAIL="contato@personalia.app"
+VITE_CONTACT_PHONE="+55 11 99999-9999"
+VITE_CONTACT_WHATSAPP="+55 11 99999-9999"
+VITE_CONTACT_INSTAGRAM="@personalia.app"
+VITE_CONTACT_ADDRESS="Rua Exemplo, 123 - Cidade/UF"
+VITE_CONTACT_SUPPORT_HOURS="Segunda a sexta, das 9h as 18h"
 ```
 
 ## Desenvolvimento local
@@ -166,6 +181,7 @@ Este projeto usa Prisma com conexao direta ao Postgres, nao `supabase-js` nem Da
 
 - O app usa `BrowserRouter`, por isso o arquivo `apps/web/vercel.json` faz rewrite de qualquer rota para `index.html`.
 - O frontend ja consome `VITE_API_URL` em `apps/web/src/lib/api.ts`.
+- As rotas publicas `/privacidade`, `/termos` e `/contato` ficam acessiveis sem login.
 
 ## Publicar o backend no Render
 
@@ -267,6 +283,8 @@ Depois disso, o serviço no Render pode subir normalmente com o `startCommand`.
 - O plano Premium libera historico completo, comparativos, mais uso do chat e expansoes futuras.
 - O Premium oferece ciclos de 1, 3, 6 e 12 meses, com valores arredondados e desconto progressivo para os planos mais longos.
 - Para testar sem gateway real, entre em `/app/plans` e use `Ativar Premium para teste`.
+- Para revisao de conta no Stripe, publique dados reais de contato nas variaveis `VITE_CONTACT_*` e mantenha as paginas `/privacidade`, `/termos` e `/contato` acessiveis.
+- Para reduzir risco na revisao do Stripe, publique pelo menos dois canais diretos de atendimento no site, como email e telefone ou WhatsApp.
 
 ## Fontes oficiais consultadas
 
