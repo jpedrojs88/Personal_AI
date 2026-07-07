@@ -16,7 +16,9 @@ services:
       - key: GEMINI_MODEL
         value: gemini-2.5-flash
       - key: PAYMENT_PROVIDER
-        value: mock
+        sync: false
+      - key: ALLOW_MOCK_BILLING_ACTIONS
+        value: "false"
       - key: DATABASE_URL
         sync: false
       - key: GEMINI_API_KEY

@@ -17,6 +17,7 @@ export class MockAiCoachProvider implements AiCoachProvider {
       strength: "forca",
       conditioning: "condicionamento",
     } as const;
+    const goalFocus = focusMap[questionnaire.goal];
 
     const gymDays = [
       {
@@ -75,7 +76,7 @@ export class MockAiCoachProvider implements AiCoachProvider {
     const templates = questionnaire.trainingLocation === "home" ? homeDays : gymDays;
 
     return {
-      title: `Plano ${questionnaire.trainingLocation === "home" ? "Casa" : "Academia"} ${questionnaire.availableDays.length}x`,
+      title: `Plano ${questionnaire.trainingLocation === "home" ? "Casa" : "Academia"} ${questionnaire.availableDays.length}x - ${goalFocus}`,
       disclaimer:
         "Treino gerado como apoio educacional. O Coach IA nao faz diagnostico medico nem promete resultados.",
       weeklySplit: questionnaire.availableDays.map((dayName, index) => ({

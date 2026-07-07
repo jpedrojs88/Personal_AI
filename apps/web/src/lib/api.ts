@@ -24,10 +24,20 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}) 
     headers.set("Authorization", `Bearer ${options.token}`);
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers,
+    });
+  } catch {
+    throw new ApiError(
+      "Nao foi possivel conectar ao servidor agora. Verifique se o backend esta ativo e tente novamente.",
+      0,
+      "NETWORK_ERROR",
+    );
+  }
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));

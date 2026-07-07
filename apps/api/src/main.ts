@@ -49,11 +49,34 @@ function parseAllowedOriginPatterns(
   });
 }
 
+function validateRuntimeConfiguration(configService: ConfigService) {
+  const jwtSecret = configService.get<string>("JWT_SECRET")?.trim();
+
+  if (!jwtSecret || jwtSecret === "change-me") {
+    throw new Error(
+      "JWT_SECRET precisa ser configurado com um valor forte antes de iniciar a API.",
+    );
+  }
+
+  const paymentProvider = configService.get<string>("PAYMENT_PROVIDER")?.trim().toUpperCase();
+
+  if (paymentProvider === "STRIPE") {
+    const stripeSecretKey = configService.get<string>("STRIPE_SECRET_KEY")?.trim();
+
+    if (!stripeSecretKey) {
+      throw new Error(
+        "STRIPE_SECRET_KEY precisa ser configurado quando PAYMENT_PROVIDER=stripe.",
+      );
+    }
+  }
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     rawBody: true,
   });
   const configService = app.get(ConfigService);
+  validateRuntimeConfiguration(configService);
   const frontendUrl = configService.get<string>("FRONTEND_URL");
   const allowedOrigins = parseAllowedOrigins([
     frontendUrl,

@@ -151,6 +151,7 @@ export interface BillingStatus {
     mode: "MOCK" | "TEST" | "LIVE";
     checkoutReady: boolean;
     customerPortalReady: boolean;
+    mockActionsEnabled: boolean;
   };
   features: {
     unlimitedWorkouts: boolean;

@@ -74,6 +74,23 @@ export class PaymentsService {
     return "TEST" as const;
   }
 
+  isMockBillingActionsEnabled() {
+    const explicit = this.configService
+      .get<string>("ALLOW_MOCK_BILLING_ACTIONS")
+      ?.trim()
+      .toLowerCase();
+
+    if (explicit === "true") {
+      return true;
+    }
+
+    if (explicit === "false") {
+      return false;
+    }
+
+    return this.getConfiguredProvider() === PaymentProvider.MOCK;
+  }
+
   async createPremiumCheckoutSession(userId: string, billingCycleMonths?: number) {
     const offer = getPremiumOfferForMonths(billingCycleMonths);
 

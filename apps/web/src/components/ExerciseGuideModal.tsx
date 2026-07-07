@@ -109,7 +109,7 @@ function ExerciseGuideMedia({
   title: string;
 }) {
   const guide = useMemo(() => getExerciseGuide(title), [title]);
-  const frames = guide.demo?.frames ?? [];
+  const frames = useMemo(() => guide.demo?.frames ?? [], [guide.demo?.frames]);
   const [frameIndex, setFrameIndex] = useState(0);
   const [hasMediaError, setHasMediaError] = useState(false);
 

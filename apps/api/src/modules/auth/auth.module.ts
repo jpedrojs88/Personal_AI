@@ -12,9 +12,14 @@ import { JwtStrategy } from "./jwt.strategy";
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const expiresIn = (configService.get<string>("JWT_EXPIRES_IN") ?? "7d") as StringValue;
+        const jwtSecret = configService.get<string>("JWT_SECRET")?.trim();
+
+        if (!jwtSecret) {
+          throw new Error("JWT_SECRET nao configurado.");
+        }
 
         return {
-          secret: configService.get<string>("JWT_SECRET", "change-me"),
+          secret: jwtSecret,
           signOptions: {
             expiresIn,
           },

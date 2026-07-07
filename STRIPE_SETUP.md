@@ -59,6 +59,7 @@ Configure no backend:
 
 ```env
 PAYMENT_PROVIDER=stripe
+ALLOW_MOCK_BILLING_ACTIONS=false
 STRIPE_SECRET_KEY=sk_live_...
 STRIPE_PRICE_ID_PREMIUM_MONTHLY=price_...
 STRIPE_PRICE_ID_PREMIUM_3M=price_...
@@ -73,7 +74,24 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 2. Confirme que os `price_...` usados nas variaveis sao os da conta real, nao os de teste.
 3. Use uma chave `sk_live_...` em `STRIPE_SECRET_KEY`.
 4. Gere um novo `STRIPE_WEBHOOK_SECRET` a partir do webhook da conta real.
-5. Faça um novo deploy do backend no Render apos salvar as variaveis.
+5. Mantenha `ALLOW_MOCK_BILLING_ACTIONS=false` para impedir ativacoes simuladas em producao.
+6. Faça um novo deploy do backend no Render apos salvar as variaveis.
+
+## Conferencia rapida no Render
+
+Antes do deploy final, confirme que o backend esta com:
+
+```env
+PAYMENT_PROVIDER=stripe
+ALLOW_MOCK_BILLING_ACTIONS=false
+FRONTEND_URL=https://seu-dominio-ou-vercel.app
+CORS_ALLOWED_ORIGINS=https://seu-dominio-ou-vercel.app
+CORS_ALLOWED_ORIGIN_PATTERNS=https://*.vercel.app
+```
+
+Se `PAYMENT_PROVIDER` ficar como `mock`, o checkout real nao sera criado. Se
+`ALLOW_MOCK_BILLING_ACTIONS` ficar como `true`, as rotas de teste continuam
+liberadas.
 
 ## Webhook
 

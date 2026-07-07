@@ -67,6 +67,7 @@ render.yaml
 - `FRONTEND_URL`: URL publica do frontend
 - `BACKEND_URL`: URL publica do backend
 - `VITE_API_URL`: URL do backend consumida pelo frontend
+- `ALLOW_MOCK_BILLING_ACTIONS`: libera ou bloqueia ativacoes simuladas no backend
 - `CORS_ALLOWED_ORIGIN_PATTERNS`: padroes extras de origem liberada, como previews da Vercel
 - `VITE_LEGAL_BUSINESS_NAME`: nome exibido nas paginas legais
 - `VITE_CONTACT_EMAIL`: e-mail publico de suporte
@@ -91,6 +92,7 @@ CORS_ALLOWED_ORIGIN_PATTERNS="https://*.vercel.app"
 GEMINI_API_KEY=""
 GEMINI_MODEL="gemini-2.5-flash"
 PAYMENT_PROVIDER="mock"
+ALLOW_MOCK_BILLING_ACTIONS="false"
 STRIPE_SECRET_KEY=""
 STRIPE_PRICE_ID_PREMIUM_MONTHLY=""
 STRIPE_PRICE_ID_PREMIUM_3M=""
@@ -198,6 +200,7 @@ Para reforcar a seguranca no Supabase e eliminar alertas do Security Advisor, as
    - `BACKEND_URL`
    - `CORS_ALLOWED_ORIGIN_PATTERNS`
    - `PAYMENT_PROVIDER`
+   - `ALLOW_MOCK_BILLING_ACTIONS`
    - `STRIPE_SECRET_KEY`
    - `STRIPE_PRICE_ID_PREMIUM_MONTHLY`
    - `STRIPE_PRICE_ID_PREMIUM_3M`
@@ -219,6 +222,7 @@ Para reforcar a seguranca no Supabase e eliminar alertas do Security Advisor, as
 - Checkout recorrente com Stripe Checkout em `mode: subscription`
 - Webhook publico em `POST /payments/stripe/webhook`
 - Portal do cliente Stripe em `POST /billing/customer-portal`
+- Bloqueio backend para ativacoes mock quando `ALLOW_MOCK_BILLING_ACTIONS=false`
 
 ### Migration no Render Free
 
@@ -230,10 +234,12 @@ npm --workspace apps/api run prisma:migrate:deploy
 
 Depois disso, o serviço no Render pode subir normalmente com o `startCommand`.
 
-## Credenciais demo
+## Credenciais demo locais
 
 - Email: `demo@personalia.app`
 - Senha: `123456`
+
+Observacao: em producao, a tela de login nao vem mais com essas credenciais preenchidas por padrao.
 
 ## Endpoints principais
 

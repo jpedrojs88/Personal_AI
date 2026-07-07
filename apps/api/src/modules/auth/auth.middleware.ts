@@ -2,6 +2,7 @@ import {
   Injectable,
   type NestMiddleware,
 } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import type { NextFunction, Request, Response } from "express";
 import { PrismaService } from "../prisma/prisma.service";
@@ -14,6 +15,7 @@ type AuthenticatedRequest = Request & {
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
   constructor(
+    private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
   ) {}
@@ -29,8 +31,14 @@ export class AuthMiddleware implements NestMiddleware {
     const token = authorization.replace("Bearer ", "").trim();
 
     try {
+      const jwtSecret = this.configService.get<string>("JWT_SECRET")?.trim();
+
+      if (!jwtSecret) {
+        throw new Error("JWT_SECRET nao configurado.");
+      }
+
       const payload = await this.jwtService.verifyAsync<{ sub: string }>(token, {
-        secret: process.env.JWT_SECRET ?? "change-me",
+        secret: jwtSecret,
       });
 
       const user = await this.prisma.user.findUnique({

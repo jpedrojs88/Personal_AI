@@ -5,8 +5,8 @@ import { useAuth } from "../lib/auth";
 
 export function LoginPage() {
   const { isAuthenticated, login } = useAuth();
-  const [email, setEmail] = useState("demo@personalia.app");
-  const [password, setPassword] = useState("123456");
+  const [email, setEmail] = useState(import.meta.env.DEV ? "demo@personalia.app" : "");
+  const [password, setPassword] = useState(import.meta.env.DEV ? "123456" : "");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [redirectTo, setRedirectTo] = useState<string | null>(null);

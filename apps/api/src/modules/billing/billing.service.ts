@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   HttpException,
   Injectable,
   NotFoundException,
@@ -50,6 +51,7 @@ export class BillingService {
   }
 
   async activatePremiumForTest(userId: string, billingCycleMonths?: number) {
+    this.assertMockBillingActionsEnabled();
     await this.ensureUserExists(userId);
     const mockSubscription = await this.paymentsService.activatePremiumMock(
       userId,
@@ -91,6 +93,7 @@ export class BillingService {
   }
 
   async resetFreeForTest(userId: string) {
+    this.assertMockBillingActionsEnabled();
     await this.ensureUserExists(userId);
 
     await this.prisma.subscription.upsert({
@@ -218,6 +221,7 @@ export class BillingService {
         mode: this.paymentsService.getProviderMode(),
         checkoutReady: this.paymentsService.isCheckoutReady(),
         customerPortalReady: this.paymentsService.isCustomerPortalReady(),
+        mockActionsEnabled: this.paymentsService.isMockBillingActionsEnabled(),
       },
       features: {
         unlimitedWorkouts: effectivePlan === SubscriptionPlan.PREMIUM,
@@ -289,6 +293,14 @@ export class BillingService {
 
     if (!user) {
       throw new NotFoundException("Usuario nao encontrado.");
+    }
+  }
+
+  private assertMockBillingActionsEnabled() {
+    if (!this.paymentsService.isMockBillingActionsEnabled()) {
+      throw new ForbiddenException(
+        "Ativacoes simuladas estao desabilitadas neste ambiente.",
+      );
     }
   }
 }

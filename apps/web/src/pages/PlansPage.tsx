@@ -143,7 +143,7 @@ export function PlansPage() {
   });
 
   const billing = billingQuery.data;
-  const offers = billing?.premiumOffers ?? [];
+  const offers = useMemo(() => billing?.premiumOffers ?? [], [billing?.premiumOffers]);
   const selectedOffer = useMemo(
     () =>
       offers.find((offer) => offer.billingCycleMonths === selectedCycleMonths) ??
@@ -156,7 +156,7 @@ export function PlansPage() {
   const checkoutMessage = checkoutMutation.data?.message;
   const hasRealCheckout = billing?.payment.provider === "STRIPE" && billing.payment.mode === "LIVE";
   const hasConfiguredStripe = billing?.payment.provider === "STRIPE" && billing.payment.checkoutReady;
-  const showMockActions = !hasConfiguredStripe;
+  const showMockActions = billing?.payment.mockActionsEnabled ?? !hasConfiguredStripe;
 
   useEffect(() => {
     if (!offers.length) {
