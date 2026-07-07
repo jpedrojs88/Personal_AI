@@ -168,6 +168,8 @@ npm run db:seed
 
 Este projeto usa Prisma com conexao direta ao Postgres, nao `supabase-js` nem Data API. Entao a mudanca recente de grants automaticos em novas tabelas do `public` schema nao afeta o funcionamento atual do app enquanto ele continuar acessando o banco pelo ORM.
 
+Para reforcar a seguranca no Supabase e eliminar alertas do Security Advisor, as tabelas publicas do projeto tambem recebem RLS habilitado por migration, com revogacao de acesso direto para os papeis `anon` e `authenticated`. Isso nao interfere no backend atual, porque o app acessa o banco pelo servidor com Prisma.
+
 ## Publicar o frontend na Vercel
 
 1. Faça push do repositorio para GitHub.
