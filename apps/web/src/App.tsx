@@ -4,6 +4,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ChatPage } from "./pages/ChatPage";
 import { ContactPage } from "./pages/ContactPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { LandingPage } from "./pages/LandingPage";
 import { LoginPage } from "./pages/LoginPage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { PlansPage } from "./pages/PlansPage";
@@ -17,6 +18,7 @@ import { WorkoutPage } from "./pages/WorkoutPage";
 export function App() {
   return (
     <Routes>
+      <Route element={<LandingPage />} path="/" />
       <Route element={<LoginPage />} path="/login" />
       <Route element={<RegisterPage />} path="/register" />
       <Route element={<PrivacyPolicyPage />} path="/privacidade" />
@@ -45,7 +47,7 @@ export function App() {
         <Route element={<PlansPage />} path="plans" />
         <Route element={<ProfilePage />} path="profile" />
       </Route>
-      <Route element={<Navigate replace to="/login" />} path="*" />
+      <Route element={<Navigate replace to="/" />} path="*" />
     </Routes>
   );
 }
