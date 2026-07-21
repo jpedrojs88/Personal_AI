@@ -13,6 +13,7 @@ MVP full-stack de um personal trainer virtual com IA para usuarios comuns de aca
   - Frontend: Vercel
   - Backend: Render Free
   - Banco: Supabase Free
+- Mobile: Capacitor para preparar builds Android e iOS
 
 ## Escolha de deploy
 
@@ -51,11 +52,14 @@ render.yaml
 
 - `render.yaml`: configuracao do backend no Render
 - `apps/web/vercel.json`: fallback SPA para Vercel
+- `apps/web/capacitor.config.ts`: configuracao mobile para Capacitor
+- `apps/web/.env.mobile.example`: exemplo de ambiente para builds de loja
 - `apps/api/src/modules/health/health.controller.ts`: endpoint `GET /health`
 - `.env.example`: referencia geral
 - `.env.development.example`: desenvolvimento
 - `.env.production.example`: producao
 - `STRIPE_SETUP.md`: passos exatos para ativar o Stripe real
+- `docs/mobile-store-release.md`: checklist de publicacao na Play Store e App Store
 
 ## Variaveis de ambiente
 
@@ -67,6 +71,7 @@ render.yaml
 - `FRONTEND_URL`: URL publica do frontend
 - `BACKEND_URL`: URL publica do backend
 - `VITE_API_URL`: URL do backend consumida pelo frontend
+- `VITE_APP_STORE_BUILD`: bloqueia checkout externo do Stripe em builds de loja quando `true`
 - `ALLOW_MOCK_BILLING_ACTIONS`: libera ou bloqueia ativacoes simuladas no backend
 - `CORS_ALLOWED_ORIGIN_PATTERNS`: padroes extras de origem liberada, como previews da Vercel
 - `VITE_LEGAL_BUSINESS_NAME`: nome exibido nas paginas legais
@@ -105,6 +110,7 @@ STRIPE_WEBHOOK_SECRET=""
 
 ```env
 VITE_API_URL="https://your-backend.onrender.com"
+VITE_APP_STORE_BUILD="false"
 VITE_LEGAL_BUSINESS_NAME="Personal IA"
 VITE_CONTACT_EMAIL="suporte.novapride@gmail.com"
 VITE_CONTACT_PHONE="(83) 9 9807-1877"
@@ -141,6 +147,7 @@ npm --workspace apps/api run prisma:migrate:deploy
 npm --workspace apps/api run build
 npm --workspace apps/api run start:prod
 npm --workspace apps/web run build
+npm --workspace apps/web run mobile:sync
 ```
 
 ## Banco com Supabase
@@ -222,7 +229,27 @@ Para reforcar a seguranca no Supabase e eliminar alertas do Security Advisor, as
 - Checkout recorrente com Stripe Checkout em `mode: subscription`
 - Webhook publico em `POST /payments/stripe/webhook`
 - Portal do cliente Stripe em `POST /billing/customer-portal`
+- Validacao de Apple IAP e Google Play Billing em `POST /billing/mobile/verify`
 - Bloqueio backend para ativacoes mock quando `ALLOW_MOCK_BILLING_ACTIONS=false`
+
+## Preparar app mobile
+
+O projeto usa Capacitor para reaproveitar o frontend React + Vite em Android e iOS.
+
+```bash
+npm --workspace apps/web run mobile:sync
+npm --workspace apps/web run mobile:add:android
+npm --workspace apps/web run mobile:open:android
+```
+
+Para iOS, rode em um Mac com Xcode:
+
+```bash
+npm --workspace apps/web run mobile:add:ios
+npm --workspace apps/web run mobile:open:ios
+```
+
+Use `apps/web/.env.mobile.example` como base e configure `VITE_APP_STORE_BUILD="true"` para builds enviados as lojas. Essa flag troca o Stripe web pelo fluxo nativo de Apple IAP ou Google Play Billing dentro do app instalado. Veja o checklist completo em `docs/mobile-store-release.md`.
 
 ### Migration no Render Free
 

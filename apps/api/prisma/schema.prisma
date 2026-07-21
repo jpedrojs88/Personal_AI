@@ -46,6 +46,8 @@ enum PaymentProvider {
   MOCK
   STRIPE
   MERCADO_PAGO
+  APPLE_IAP
+  GOOGLE_PLAY
 }
 
 model User {

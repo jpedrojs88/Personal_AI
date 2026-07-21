@@ -147,7 +147,7 @@ export interface BillingStatus {
   monthlyMessagesUsed: number;
   monthlyMessagesRemaining: number;
   payment: {
-    provider: "MOCK" | "STRIPE" | "MERCADO_PAGO";
+    provider: "MOCK" | "STRIPE" | "MERCADO_PAGO" | "APPLE_IAP" | "GOOGLE_PLAY";
     mode: "MOCK" | "TEST" | "LIVE";
     checkoutReady: boolean;
     customerPortalReady: boolean;

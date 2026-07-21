@@ -3,6 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiRequest } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import {
+  isMobileStoreBuild,
+  isNativeMobileStoreAvailable,
+  purchasePremiumMobile,
+  restoreMobilePurchases,
+} from "../lib/mobilePurchases";
 import type { BillingStatus } from "../types";
 
 type CheckoutSessionResponse = {
@@ -64,6 +70,14 @@ function getProviderLabel(billing?: BillingStatus | null) {
     return "Mercado Pago";
   }
 
+  if (billing.payment.provider === "APPLE_IAP") {
+    return "Apple IAP";
+  }
+
+  if (billing.payment.provider === "GOOGLE_PLAY") {
+    return "Google Play";
+  }
+
   return "Simulacao";
 }
 
@@ -81,7 +95,7 @@ function getStatusLabel(status?: BillingStatus["status"]) {
 }
 
 export function PlansPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedCycleMonths, setSelectedCycleMonths] = useState(12);
 
@@ -142,6 +156,39 @@ export function PlansPage() {
     },
   });
 
+  const mobilePurchaseMutation = useMutation({
+    mutationFn: () =>
+      purchasePremiumMobile({
+        token: token ?? "",
+        userId: user?.id ?? "",
+        billingCycleMonths: selectedCycleMonths,
+        onVerified: () => {
+          queryClient.invalidateQueries({ queryKey: ["billing-status", token] });
+          queryClient.invalidateQueries({ queryKey: ["progress-history", token] });
+        },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["billing-status", token] });
+      queryClient.invalidateQueries({ queryKey: ["progress-history", token] });
+    },
+  });
+
+  const restoreMobileMutation = useMutation({
+    mutationFn: () =>
+      restoreMobilePurchases({
+        token: token ?? "",
+        userId: user?.id ?? "",
+        onVerified: () => {
+          queryClient.invalidateQueries({ queryKey: ["billing-status", token] });
+          queryClient.invalidateQueries({ queryKey: ["progress-history", token] });
+        },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["billing-status", token] });
+      queryClient.invalidateQueries({ queryKey: ["progress-history", token] });
+    },
+  });
+
   const billing = billingQuery.data;
   const offers = useMemo(() => billing?.premiumOffers ?? [], [billing?.premiumOffers]);
   const selectedOffer = useMemo(
@@ -156,7 +203,10 @@ export function PlansPage() {
   const checkoutMessage = checkoutMutation.data?.message;
   const hasRealCheckout = billing?.payment.provider === "STRIPE" && billing.payment.mode === "LIVE";
   const hasConfiguredStripe = billing?.payment.provider === "STRIPE" && billing.payment.checkoutReady;
-  const showMockActions = billing?.payment.mockActionsEnabled ?? !hasConfiguredStripe;
+  const mobileStoreBuild = isMobileStoreBuild();
+  const nativeMobileStoreAvailable = isNativeMobileStoreAvailable();
+  const showMockActions =
+    !mobileStoreBuild && (billing?.payment.mockActionsEnabled ?? !hasConfiguredStripe);
 
   useEffect(() => {
     if (!offers.length) {
@@ -220,6 +270,22 @@ export function PlansPage() {
           <h3>Seu plano Gratuito esgotou as mensagens com IA deste mes</h3>
           <p>
             Ative o Premium para continuar usando o coach ou aguarde o proximo ciclo mensal.
+          </p>
+        </article>
+      ) : null}
+
+      {mobileStoreBuild ? (
+        <article className="card stack card--warning">
+          <p className="eyebrow">Versão mobile</p>
+          <h3>
+            {nativeMobileStoreAvailable
+              ? "Assinatura nativa ativada"
+              : "Assinaturas nativas preparadas"}
+          </h3>
+          <p>
+            {nativeMobileStoreAvailable
+              ? "Esta versão usa Apple IAP ou Google Play Billing para liberar o Premium dentro do app."
+              : "No navegador, o checkout nativo nao aparece. Ao instalar o app pela loja, a compra usa Apple IAP ou Google Play Billing."}
           </p>
         </article>
       ) : null}
@@ -324,12 +390,35 @@ export function PlansPage() {
           <div className="stack">
             <button
               className="primary-button"
-              disabled={checkoutMutation.isPending}
-              onClick={() => checkoutMutation.mutate()}
+              disabled={checkoutMutation.isPending || mobilePurchaseMutation.isPending}
+              onClick={() => {
+                if (mobileStoreBuild) {
+                  mobilePurchaseMutation.mutate();
+                  return;
+                }
+
+                checkoutMutation.mutate();
+              }}
               type="button"
             >
-              {checkoutMutation.isPending ? "Preparando..." : "Assinar Premium"}
+              {mobileStoreBuild
+                ? mobilePurchaseMutation.isPending
+                  ? "Abrindo loja..."
+                  : "Assinar pela loja"
+                : checkoutMutation.isPending
+                  ? "Preparando..."
+                  : "Assinar Premium"}
             </button>
+            {mobileStoreBuild ? (
+              <button
+                className="ghost-button"
+                disabled={restoreMobileMutation.isPending}
+                onClick={() => restoreMobileMutation.mutate()}
+                type="button"
+              >
+                {restoreMobileMutation.isPending ? "Restaurando..." : "Restaurar compra"}
+              </button>
+            ) : null}
             {showMockActions ? (
               <button
                 className="ghost-button"
@@ -343,6 +432,7 @@ export function PlansPage() {
               </button>
             ) : null}
             {isPremium &&
+            !mobileStoreBuild &&
             billing?.payment.provider === "STRIPE" &&
             billing.payment.customerPortalReady ? (
               <button
@@ -365,6 +455,18 @@ export function PlansPage() {
           <p className="eyebrow">Pagamento</p>
           <h3>{hasRealCheckout ? "Cobranca real ativa no Stripe" : "Fluxo de pagamento pronto"}</h3>
           <p>{checkoutMessage ?? customerPortalMutation.data?.message}</p>
+        </article>
+      ) : null}
+
+      {mobilePurchaseMutation.error || restoreMobileMutation.error ? (
+        <article className="card stack card--warning">
+          <p className="eyebrow">Loja mobile</p>
+          <h3>Nao foi possivel concluir a compra</h3>
+          <p>
+            {(mobilePurchaseMutation.error ?? restoreMobileMutation.error) instanceof Error
+              ? (mobilePurchaseMutation.error ?? restoreMobileMutation.error)?.message
+              : "Tente novamente em instantes."}
+          </p>
         </article>
       ) : null}
 

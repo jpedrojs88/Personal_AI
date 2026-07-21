@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { HttpException, Injectable, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { GoogleAuth } from "google-auth-library";
+import { decodeJwt, importPKCS8, SignJWT } from "jose";
 import {
   PaymentProvider,
   SubscriptionPlan,
@@ -13,6 +15,7 @@ import {
   normalizeBillingCycleMonths,
   PREMIUM_MONTHLY_MESSAGE_LIMIT,
 } from "../billing/billing.constants";
+import type { MobilePurchaseValidationDto } from "../billing/dto/mobile-purchase-validation.dto";
 import { PrismaService } from "../prisma/prisma.service";
 
 type StripeSubscriptionStatus =
@@ -24,6 +27,40 @@ type StripeSubscriptionStatus =
   | "paused"
   | "trialing"
   | "unpaid";
+
+type MobilePaymentProvider = Extract<PaymentProvider, "APPLE_IAP" | "GOOGLE_PLAY">;
+
+type MobileStoreVerification = {
+  paymentProvider: MobilePaymentProvider;
+  providerCustomerId: string | null;
+  providerSubscriptionId: string;
+  productId: string;
+  billingCycleMonths: number;
+  startedAt: Date;
+  expiresAt: Date | null;
+  active: boolean;
+};
+
+type AppleTransactionPayload = {
+  transactionId?: string;
+  originalTransactionId?: string;
+  productId?: string;
+  bundleId?: string;
+  purchaseDate?: number;
+  expiresDate?: number;
+  revocationDate?: number;
+  environment?: string;
+};
+
+type GoogleSubscriptionPurchaseV2 = {
+  latestOrderId?: string;
+  startTime?: string;
+  subscriptionState?: string;
+  lineItems?: Array<{
+    productId?: string;
+    expiryTime?: string;
+  }>;
+};
 
 @Injectable()
 export class PaymentsService {
@@ -43,6 +80,14 @@ export class PaymentsService {
 
     if (provider === PaymentProvider.MERCADO_PAGO) {
       return PaymentProvider.MERCADO_PAGO;
+    }
+
+    if (provider === PaymentProvider.APPLE_IAP) {
+      return PaymentProvider.APPLE_IAP;
+    }
+
+    if (provider === PaymentProvider.GOOGLE_PLAY) {
+      return PaymentProvider.GOOGLE_PLAY;
     }
 
     return PaymentProvider.MOCK;
@@ -281,6 +326,51 @@ export class PaymentsService {
     };
   }
 
+  async verifyMobilePurchase(userId: string, dto: MobilePurchaseValidationDto) {
+    const verification =
+      dto.platform === "android-playstore"
+        ? await this.verifyGooglePlayPurchase(dto)
+        : await this.verifyApplePurchase(dto);
+
+    const status = verification.active
+      ? SubscriptionStatus.ACTIVE
+      : SubscriptionStatus.EXPIRED;
+    const monthlyMessageLimit = verification.active
+      ? PREMIUM_MONTHLY_MESSAGE_LIMIT
+      : FREE_MONTHLY_MESSAGE_LIMIT;
+
+    await this.prisma.subscription.upsert({
+      where: { userId },
+      create: {
+        userId,
+        plan: SubscriptionPlan.PREMIUM,
+        status,
+        billingCycleMonths: verification.billingCycleMonths,
+        startedAt: verification.startedAt,
+        expiresAt: verification.expiresAt,
+        monthlyMessageLimit,
+        monthlyMessagesUsed: 0,
+        usagePeriodStartedAt: new Date(),
+        paymentProvider: verification.paymentProvider,
+        providerCustomerId: verification.providerCustomerId,
+        providerSubscriptionId: verification.providerSubscriptionId,
+      },
+      update: {
+        plan: SubscriptionPlan.PREMIUM,
+        status,
+        billingCycleMonths: verification.billingCycleMonths,
+        startedAt: verification.startedAt,
+        expiresAt: verification.expiresAt,
+        monthlyMessageLimit,
+        paymentProvider: verification.paymentProvider,
+        providerCustomerId: verification.providerCustomerId,
+        providerSubscriptionId: verification.providerSubscriptionId,
+      },
+    });
+
+    return verification;
+  }
+
   private async syncStripeSubscription(subscription: Stripe.Subscription) {
     const userId = await this.resolveUserIdFromStripeSubscription(subscription);
 
@@ -430,6 +520,305 @@ export class PaymentsService {
     }
 
     return this.configService.get<string>("STRIPE_PRICE_ID_PREMIUM_12M")?.trim() || null;
+  }
+
+  private async verifyApplePurchase(
+    dto: MobilePurchaseValidationDto,
+  ): Promise<MobileStoreVerification> {
+    const signedTransactionInfo =
+      dto.signedTransactionInfo ??
+      this.readNestedString(dto.receipt, "transaction", "jwsRepresentation") ??
+      this.readNestedString(dto.receipt, "transaction", "signedTransactionInfo");
+
+    if (!signedTransactionInfo) {
+      throw new HttpException("Recibo Apple sem transacao StoreKit assinada.", 400);
+    }
+
+    const localPayload = decodeJwt(signedTransactionInfo) as AppleTransactionPayload;
+    const transactionId =
+      dto.transactionId ??
+      localPayload.transactionId ??
+      localPayload.originalTransactionId;
+
+    if (!transactionId) {
+      throw new HttpException("Nao foi possivel identificar a transacao Apple.", 400);
+    }
+
+    const transactionPayload = await this.getAppleTransactionInfo(transactionId);
+    const productId = transactionPayload.productId ?? dto.productId;
+    const offer = this.getMobileStoreOffer(PaymentProvider.APPLE_IAP, productId);
+    const expectedBundleId = this.configService.get<string>("APPLE_IAP_BUNDLE_ID")?.trim();
+
+    if (expectedBundleId && transactionPayload.bundleId !== expectedBundleId) {
+      throw new HttpException("Recibo Apple pertence a outro app.", 400);
+    }
+
+    const expiresAt = transactionPayload.expiresDate
+      ? new Date(Number(transactionPayload.expiresDate))
+      : null;
+    const startedAt = transactionPayload.purchaseDate
+      ? new Date(Number(transactionPayload.purchaseDate))
+      : new Date();
+
+    return {
+      paymentProvider: PaymentProvider.APPLE_IAP,
+      providerCustomerId: transactionPayload.originalTransactionId ?? transactionId,
+      providerSubscriptionId: transactionPayload.originalTransactionId ?? transactionId,
+      productId,
+      billingCycleMonths: offer.billingCycleMonths,
+      startedAt,
+      expiresAt,
+      active: Boolean(expiresAt && expiresAt > new Date() && !transactionPayload.revocationDate),
+    };
+  }
+
+  private async getAppleTransactionInfo(transactionId: string) {
+    const keyId = this.configService.get<string>("APPLE_IAP_KEY_ID")?.trim();
+    const issuerId = this.configService.get<string>("APPLE_IAP_ISSUER_ID")?.trim();
+    const bundleId = this.configService.get<string>("APPLE_IAP_BUNDLE_ID")?.trim();
+    const rawPrivateKey = this.configService.get<string>("APPLE_IAP_PRIVATE_KEY")?.trim();
+
+    if (!keyId || !issuerId || !bundleId || !rawPrivateKey) {
+      throw new HttpException("Credenciais Apple IAP nao configuradas no servidor.", 503);
+    }
+
+    const privateKey = await importPKCS8(rawPrivateKey.replace(/\\n/g, "\n"), "ES256");
+    const token = await new SignJWT({ bid: bundleId })
+      .setProtectedHeader({ alg: "ES256", kid: keyId, typ: "JWT" })
+      .setIssuer(issuerId)
+      .setAudience("appstoreconnect-v1")
+      .setIssuedAt()
+      .setExpirationTime("15m")
+      .sign(privateKey);
+
+    const environment =
+      this.configService.get<string>("APPLE_IAP_ENVIRONMENT")?.trim().toLowerCase() === "sandbox"
+        ? "sandbox"
+        : "production";
+    const baseUrl =
+      environment === "sandbox"
+        ? "https://api.storekit-sandbox.itunes.apple.com"
+        : "https://api.storekit.itunes.apple.com";
+
+    const response = await fetch(
+      `${baseUrl}/inApps/v1/transactions/${encodeURIComponent(transactionId)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new HttpException(
+        `Apple IAP recusou a validacao da transacao (${response.status}).`,
+        400,
+      );
+    }
+
+    const body = (await response.json()) as { signedTransactionInfo?: string };
+
+    if (!body.signedTransactionInfo) {
+      throw new HttpException("Apple IAP nao retornou a transacao assinada.", 400);
+    }
+
+    return decodeJwt(body.signedTransactionInfo) as AppleTransactionPayload;
+  }
+
+  private async verifyGooglePlayPurchase(
+    dto: MobilePurchaseValidationDto,
+  ): Promise<MobileStoreVerification> {
+    const purchaseToken =
+      dto.purchaseToken ??
+      this.readNestedString(dto.receipt, "transaction", "purchaseToken") ??
+      this.readPurchaseTokenFromGoogleReceipt(dto.receipt);
+
+    if (!purchaseToken) {
+      throw new HttpException("Recibo Google Play sem purchaseToken.", 400);
+    }
+
+    const packageName =
+      this.configService.get<string>("GOOGLE_PLAY_PACKAGE_NAME")?.trim() ??
+      this.configService.get<string>("ANDROID_PACKAGE_NAME")?.trim() ??
+      "br.com.novapride.personalia";
+    const accessToken = await this.getGooglePlayAccessToken();
+    const response = await fetch(
+      `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${encodeURIComponent(
+        packageName,
+      )}/purchases/subscriptionsv2/tokens/${encodeURIComponent(purchaseToken)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new HttpException(
+        `Google Play recusou a validacao da assinatura (${response.status}).`,
+        400,
+      );
+    }
+
+    const purchase = (await response.json()) as GoogleSubscriptionPurchaseV2;
+    const localReceiptProductId = this.readProductIdFromGoogleReceipt(dto.receipt);
+    const lineItem = purchase.lineItems?.find((item) =>
+      this.isKnownMobileProduct(PaymentProvider.GOOGLE_PLAY, item.productId),
+    );
+    const productId = lineItem?.productId ?? localReceiptProductId ?? dto.productId;
+    const offer = this.getMobileStoreOffer(PaymentProvider.GOOGLE_PLAY, productId);
+    const matchingLineItem =
+      lineItem ??
+      purchase.lineItems?.find((item) => item.productId === productId) ??
+      purchase.lineItems?.[0];
+    const expiresAt = matchingLineItem?.expiryTime ? new Date(matchingLineItem.expiryTime) : null;
+    const startedAt = purchase.startTime ? new Date(purchase.startTime) : new Date();
+    const activeStates = new Set([
+      "SUBSCRIPTION_STATE_ACTIVE",
+      "SUBSCRIPTION_STATE_CANCELED",
+      "SUBSCRIPTION_STATE_IN_GRACE_PERIOD",
+    ]);
+
+    return {
+      paymentProvider: PaymentProvider.GOOGLE_PLAY,
+      providerCustomerId: purchase.latestOrderId ?? null,
+      providerSubscriptionId: purchaseToken,
+      productId,
+      billingCycleMonths: offer.billingCycleMonths,
+      startedAt,
+      expiresAt,
+      active: Boolean(
+        activeStates.has(purchase.subscriptionState ?? "") &&
+          expiresAt &&
+          expiresAt > new Date(),
+      ),
+    };
+  }
+
+  private async getGooglePlayAccessToken() {
+    const rawCredentials = this.configService
+      .get<string>("GOOGLE_PLAY_SERVICE_ACCOUNT_JSON")
+      ?.trim();
+    const keyFile = this.configService.get<string>("GOOGLE_PLAY_SERVICE_ACCOUNT_KEY_FILE")?.trim();
+
+    if (!rawCredentials && !keyFile) {
+      throw new HttpException("Credenciais Google Play Billing nao configuradas.", 503);
+    }
+
+    const auth = new GoogleAuth({
+      ...(rawCredentials
+        ? { credentials: JSON.parse(rawCredentials) as Record<string, unknown> }
+        : {}),
+      ...(keyFile ? { keyFile } : {}),
+      scopes: ["https://www.googleapis.com/auth/androidpublisher"],
+    });
+    const client = await auth.getClient();
+    const token = await client.getAccessToken();
+
+    if (!token.token) {
+      throw new HttpException("Nao foi possivel autenticar no Google Play.", 503);
+    }
+
+    return token.token;
+  }
+
+  private getMobileStoreOffer(
+    provider: MobilePaymentProvider,
+    productId?: string | null,
+  ) {
+    const match = this.getMobileStoreProducts(provider).find((product) => product.id === productId);
+
+    if (!match) {
+      throw new HttpException("Produto mobile nao reconhecido pelo servidor.", 400);
+    }
+
+    return match;
+  }
+
+  private isKnownMobileProduct(
+    provider: MobilePaymentProvider,
+    productId?: string | null,
+  ) {
+    return Boolean(
+      productId &&
+        this.getMobileStoreProducts(provider).some((product) => product.id === productId),
+    );
+  }
+
+  private getMobileStoreProducts(provider: MobilePaymentProvider) {
+    const prefix = provider === PaymentProvider.APPLE_IAP ? "APPLE_IAP" : "GOOGLE_PLAY";
+
+    return [
+      {
+        billingCycleMonths: 1,
+        id:
+          this.configService.get<string>(`${prefix}_PRODUCT_ID_PREMIUM_MONTHLY`)?.trim() ??
+          "personalia.premium.monthly",
+      },
+      {
+        billingCycleMonths: 3,
+        id:
+          this.configService.get<string>(`${prefix}_PRODUCT_ID_PREMIUM_3M`)?.trim() ??
+          "personalia.premium.3m",
+      },
+      {
+        billingCycleMonths: 6,
+        id:
+          this.configService.get<string>(`${prefix}_PRODUCT_ID_PREMIUM_6M`)?.trim() ??
+          "personalia.premium.6m",
+      },
+      {
+        billingCycleMonths: 12,
+        id:
+          this.configService.get<string>(`${prefix}_PRODUCT_ID_PREMIUM_12M`)?.trim() ??
+          "personalia.premium.12m",
+      },
+    ];
+  }
+
+  private readNestedString(
+    value: Record<string, unknown> | undefined,
+    firstKey: string,
+    secondKey: string,
+  ) {
+    const nested = value?.[firstKey];
+
+    if (!nested || typeof nested !== "object") {
+      return undefined;
+    }
+
+    const nestedValue = (nested as Record<string, unknown>)[secondKey];
+    return typeof nestedValue === "string" ? nestedValue : undefined;
+  }
+
+  private readPurchaseTokenFromGoogleReceipt(receipt: Record<string, unknown> | undefined) {
+    const rawReceipt = this.readNestedString(receipt, "transaction", "receipt");
+
+    if (!rawReceipt) {
+      return undefined;
+    }
+
+    try {
+      const parsed = JSON.parse(rawReceipt) as { purchaseToken?: string };
+      return parsed.purchaseToken;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private readProductIdFromGoogleReceipt(receipt: Record<string, unknown> | undefined) {
+    const rawReceipt = this.readNestedString(receipt, "transaction", "receipt");
+
+    if (!rawReceipt) {
+      return undefined;
+    }
+
+    try {
+      const parsed = JSON.parse(rawReceipt) as { productId?: string };
+      return parsed.productId;
+    } catch {
+      return undefined;
+    }
   }
 
   private getFrontendUrl() {

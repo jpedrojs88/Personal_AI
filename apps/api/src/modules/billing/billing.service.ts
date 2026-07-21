@@ -17,6 +17,7 @@ import {
   PREMIUM_MONTHLY_PRICE_BRL,
   PREMIUM_MONTHLY_PRICE_LABEL,
 } from "./billing.constants";
+import type { MobilePurchaseValidationDto } from "./dto/mobile-purchase-validation.dto";
 import { PaymentsService } from "../payments/payments.service";
 
 @Injectable()
@@ -120,6 +121,12 @@ export class BillingService {
     return this.paymentsService.createCustomerPortalSession(userId);
   }
 
+  async verifyMobilePurchase(userId: string, dto: MobilePurchaseValidationDto) {
+    await this.ensureUserExists(userId);
+    await this.paymentsService.verifyMobilePurchase(userId, dto);
+    return this.getStatus(userId);
+  }
+
   private async getOrCreateSubscription(userId: string) {
     await this.ensureUserExists(userId);
 
@@ -197,6 +204,11 @@ export class BillingService {
       messageLimit - subscription.monthlyMessagesUsed,
       0,
     );
+    const configuredProvider = this.paymentsService.getConfiguredProvider();
+    const displayedProvider =
+      subscription.paymentProvider !== PaymentProvider.MOCK
+        ? subscription.paymentProvider
+        : configuredProvider;
 
     return {
       currentPlan: subscription.plan,
@@ -217,8 +229,12 @@ export class BillingService {
       monthlyMessagesUsed: subscription.monthlyMessagesUsed,
       monthlyMessagesRemaining,
       payment: {
-        provider: this.paymentsService.getConfiguredProvider(),
-        mode: this.paymentsService.getProviderMode(),
+        provider: displayedProvider,
+        mode:
+          displayedProvider === PaymentProvider.APPLE_IAP ||
+          displayedProvider === PaymentProvider.GOOGLE_PLAY
+            ? "LIVE"
+            : this.paymentsService.getProviderMode(),
         checkoutReady: this.paymentsService.isCheckoutReady(),
         customerPortalReady: this.paymentsService.isCustomerPortalReady(),
         mockActionsEnabled: this.paymentsService.isMockBillingActionsEnabled(),

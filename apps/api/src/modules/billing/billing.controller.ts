@@ -3,6 +3,7 @@ import type { AuthenticatedUser } from "../auth/auth-user.type";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { BillingCycleDto } from "./dto/billing-cycle.dto";
+import { MobilePurchaseValidationDto } from "./dto/mobile-purchase-validation.dto";
 import { BillingService } from "./billing.service";
 
 @Controller("billing")
@@ -34,6 +35,14 @@ export class BillingController {
   @Post("customer-portal")
   createCustomerPortal(@CurrentUser() user: AuthenticatedUser) {
     return this.billingService.createCustomerPortalSession(user.id);
+  }
+
+  @Post("mobile/verify")
+  verifyMobilePurchase(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: MobilePurchaseValidationDto,
+  ) {
+    return this.billingService.verifyMobilePurchase(user.id, dto);
   }
 
   @Post("mock/reset-free")
