@@ -1,8 +1,8 @@
-# Preparacao para Play Store e App Store
+# Preparação para Play Store e App Store
 
 Este guia deixa o Personal IA pronto para virar app Android e iOS usando Capacitor, reaproveitando o frontend React + Vite.
 
-## Decisao tecnica
+## Decisão técnica
 
 - Empacotamento mobile: Capacitor.
 - App ID inicial: `br.com.novapride.personalia`.
@@ -12,7 +12,7 @@ Este guia deixa o Personal IA pronto para virar app Android e iOS usando Capacit
 - Backend: continua sendo o Render.
 - Banco: continua sendo Supabase PostgreSQL.
 
-## Ponto critico sobre pagamentos
+## Ponto crítico sobre pagamentos
 
 Para web, o Stripe continua correto.
 
@@ -22,14 +22,14 @@ Para Play Store e App Store, assinatura Premium que libera recursos digitais do 
 VITE_APP_STORE_BUILD="true"
 ```
 
-Quando essa flag esta ativa, a tela de planos usa Apple IAP ou Google Play Billing no app instalado. No navegador, ela apenas mostra o aviso de que as compras nativas ficam disponiveis no build da loja.
+Quando essa flag está ativa, a tela de planos usa Apple IAP ou Google Play Billing no app instalado. No navegador, ela apenas mostra o aviso de que as compras nativas ficam disponíveis no build da loja.
 
 Fluxo recomendado:
 
 1. Publicar web com Stripe normalmente.
 2. Criar os produtos de assinatura no App Store Connect e Play Console.
-3. Configurar as variaveis de IAP/Billing no Render e no build mobile.
-4. Testar compras sandbox/TestFlight e teste fechado do Google Play antes de enviar para revisao.
+3. Configurar as variáveis de IAP/Billing no Render e no build mobile.
+4. Testar compras sandbox/TestFlight e teste fechado do Google Play antes de enviar para revisão.
 
 ## Produtos de assinatura
 
@@ -42,7 +42,7 @@ personalia.premium.6m
 personalia.premium.12m
 ```
 
-Valores atuais sugeridos:
+Valores atuais:
 
 ```text
 1 mes: R$ 9,90
@@ -51,7 +51,7 @@ Valores atuais sugeridos:
 12 meses: R$ 99,90
 ```
 
-## Variaveis backend para Render
+## Variáveis backend para Render
 
 ```env
 APPLE_IAP_BUNDLE_ID="br.com.novapride.personalia"
@@ -71,13 +71,13 @@ GOOGLE_PLAY_PRODUCT_ID_PREMIUM_6M="personalia.premium.6m"
 GOOGLE_PLAY_PRODUCT_ID_PREMIUM_12M="personalia.premium.12m"
 ```
 
-Observacoes:
+Observações:
 
 - `APPLE_IAP_PRIVATE_KEY` deve conter a chave privada da App Store Server API. Se colar em uma linha, substitua quebras de linha por `\n`.
-- `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` deve ser o JSON da service account com permissao para Android Publisher API.
+- `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` deve ser o JSON da service account com permissão para Android Publisher API.
 - Para sandbox Apple, use `APPLE_IAP_ENVIRONMENT="sandbox"`.
 
-## Variaveis frontend para build mobile
+## Variáveis frontend para build mobile
 
 ```env
 VITE_APP_STORE_BUILD="true"
@@ -91,7 +91,7 @@ VITE_GOOGLE_PLAY_PRODUCT_ID_PREMIUM_6M="personalia.premium.6m"
 VITE_GOOGLE_PLAY_PRODUCT_ID_PREMIUM_12M="personalia.premium.12m"
 ```
 
-## Backend de validacao
+## Backend de validação
 
 O app envia recibos para:
 
@@ -101,14 +101,14 @@ POST /billing/mobile/verify
 
 O backend valida:
 
-- Apple: App Store Server API, endpoint de transacao.
+- Apple: App Store Server API, endpoint de transação.
 - Google: Android Publisher API `purchases.subscriptionsv2.get`.
 
 Depois de validado, o backend salva a assinatura como `APPLE_IAP` ou `GOOGLE_PLAY` e libera Premium usando a mesma tabela `subscriptions`.
 
 ## Comandos
 
-Instalar dependencias:
+Instalar dependências:
 
 ```bash
 npm install --legacy-peer-deps
@@ -120,7 +120,7 @@ Build web para mobile:
 npm --workspace apps/web run mobile:sync
 ```
 
-O Android ja foi adicionado ao repositorio. Se precisar recriar do zero:
+O Android já foi adicionado ao repositório. Se precisar recriar do zero:
 
 ```bash
 npm --workspace apps/web run mobile:add:android
@@ -144,15 +144,15 @@ Abrir no Xcode:
 npm --workspace apps/web run mobile:open:ios
 ```
 
-Gerar icones e splash depois que os arquivos PNG estiverem em `apps/web/assets`:
+Gerar ícones e splash:
 
 ```bash
 npm --workspace apps/web run mobile:assets
 ```
 
-## Assets necessarios
+## Assets necessários
 
-O Capacitor Assets espera estes arquivos em `apps/web/assets`:
+O comando `npm --workspace apps/web run mobile:assets` gera estes arquivos em `apps/web/assets` e depois cria os assets nativos do Android:
 
 ```text
 apps/web/assets/
@@ -163,24 +163,45 @@ apps/web/assets/
   splash-dark.png
 ```
 
-Tamanhos recomendados:
+Tamanhos usados:
 
-- Icones: 1024x1024 PNG.
+- Ícones: 1024x1024 PNG.
 - Splash: 2732x2732 PNG.
 - Fundo escuro: `#07090d`.
 - Cor principal: `#21d2ad`.
+
+## Materiais visuais para as lojas
+
+O projeto já gera:
+
+- Ícone principal do app.
+- Ícone adaptativo Android.
+- Splash screen.
+- Ícones PWA para navegador e instalação web.
+- Manifesto web em `apps/web/public/manifest.webmanifest`.
+
+Screenshots sugeridos para cadastro nas lojas:
+
+- Landing page.
+- Cadastro ou login.
+- Dashboard.
+- Treino do dia com exercícios.
+- Chat IA.
+- Tela de planos.
+
+Use os tamanhos exigidos pelo Play Console e App Store Connect no momento do envio. A forma mais segura é abrir o app em um emulador ou aparelho real, capturar as telas principais e subir as imagens diretamente nos consoles.
 
 ## Checklist Play Store
 
 - Criar conta Google Play Console.
 - Criar app com nome `Personal IA`.
-- Categoria sugerida: Saude e fitness.
-- Publico-alvo: adultos ou publico geral, conforme decisao de negocio.
-- Enviar politica de privacidade: `https://seu-dominio/privacidade`.
-- Preencher formulario de seguranca de dados.
-- O projeto gerado pelo Capacitor esta com `targetSdkVersion = 36`.
+- Categoria sugerida: Saúde e fitness.
+- Público-alvo: adultos ou público geral, conforme decisão de negócio.
+- Enviar política de privacidade: `https://seu-dominio/privacidade`.
+- Preencher formulário de segurança de dados.
+- O projeto gerado pelo Capacitor está com `targetSdkVersion = 36`.
 - Criar assinatura Premium com os quatro produtos listados acima.
-- Configurar conta de servico com Android Publisher API e acesso ao app no Play Console.
+- Configurar conta de serviço com Android Publisher API e acesso ao app no Play Console.
 - Gerar Android App Bundle (`.aab`) no Android Studio.
 - Testar login, cadastro, treino, chat, planos e links legais em aparelho real.
 
@@ -190,24 +211,24 @@ Tamanhos recomendados:
 - Criar Bundle ID igual ao `appId` ou ajustar `capacitor.config.ts` antes de gerar o projeto.
 - Criar app no App Store Connect.
 - Categoria sugerida: Health & Fitness.
-- Informar URL de politica de privacidade.
+- Informar URL de política de privacidade.
 - Preencher App Privacy com dados coletados pelo app.
 - Criar grupo de assinaturas Premium com os quatro produtos listados acima.
-- Criar chave da App Store Server API para validar transacoes no backend.
-- Testar em TestFlight antes da revisao.
+- Criar chave da App Store Server API para validar transações no backend.
+- Testar em TestFlight antes da revisão.
 - Se liberar Premium no app iOS, usar auto-renewable subscriptions da Apple.
 
-## Dados provaveis de privacidade
+## Dados prováveis de privacidade
 
 O app pode coletar:
 
 - Nome e e-mail.
-- Dados de perfil de treino: idade, sexo, altura, peso, objetivo e experiencia.
-- Dados de saude/fitness informados pelo usuario: peso corporal, cargas e historico de treino.
-- Conteudo de mensagens enviadas ao coach de IA.
+- Dados de perfil de treino: idade, sexo, altura, peso, objetivo e experiência.
+- Dados de saúde/fitness informados pelo usuário: peso corporal, cargas e histórico de treino.
+- Conteúdo de mensagens enviadas ao coach de IA.
 - Dados de compra/assinatura quando o Premium estiver ativo.
 
-O app nao deve prometer resultado fisico, diagnosticar condicoes medicas ou substituir profissional de saude.
+O app não deve prometer resultado físico, diagnosticar condições médicas ou substituir profissional de saúde.
 
 ## Textos iniciais para cadastro nas lojas
 
@@ -217,32 +238,32 @@ Nome:
 Personal IA
 ```
 
-Descricao curta:
+Descrição curta:
 
 ```text
-Treinos personalizados com IA, historico de evolucao e coach para adaptar sua rotina.
+Treinos personalizados com IA, histórico de evolução e coach para adaptar sua rotina.
 ```
 
-Descricao completa:
+Descrição completa:
 
 ```text
-O Personal IA ajuda voce a montar treinos personalizados, acompanhar sua evolucao e conversar com um coach de IA para adaptar sua rotina.
+O Personal IA ajuda você a montar treinos personalizados, acompanhar sua evolução e conversar com um coach de IA para adaptar sua rotina.
 
-Responda um questionario inicial, receba uma divisao semanal de treino, registre exercicios concluidos, acompanhe cargas e veja seu historico de progresso.
+Responda um questionário inicial, receba uma divisão semanal de treino, registre exercícios concluídos, acompanhe cargas e veja seu histórico de progresso.
 
-O aplicativo oferece orientacoes educacionais sobre treino e nao substitui avaliacao medica, diagnostico, acompanhamento presencial ou orientacao de um profissional habilitado.
+O aplicativo oferece orientações educacionais sobre treino e não substitui avaliação médica, diagnóstico, acompanhamento presencial ou orientação de um profissional habilitado.
 ```
 
 Palavras-chave:
 
 ```text
-treino, academia, fitness, personal trainer, musculacao, IA, evolucao, cargas
+treino, academia, fitness, personal trainer, musculação, IA, evolução, cargas
 ```
 
-## Referencias oficiais
+## Referências oficiais
 
 - Capacitor config: https://capacitorjs.com/docs/config
-- Capacitor icones e splash: https://capacitorjs.com/docs/guides/splash-screens-and-icons
+- Capacitor ícones e splash: https://capacitorjs.com/docs/guides/splash-screens-and-icons
 - Google Play target API: https://developer.android.com/google/play/requirements/target-sdk
 - Apple App Privacy: https://developer.apple.com/app-store/app-privacy-details/
 - Apple Review Guidelines: https://developer.apple.com/app-store/review/guidelines/
